@@ -11,57 +11,6 @@
       </AppButton>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <AppCard padding="normal">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Total Productos</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ products.length }}</p>
-          </div>
-          <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <CubeIcon class="h-6 w-6 text-blue-600" />
-          </div>
-        </div>
-      </AppCard>
-
-      <AppCard padding="normal">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Stock Total</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ totalStock }}</p>
-          </div>
-          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <ArchiveBoxIcon class="h-6 w-6 text-green-600" />
-          </div>
-        </div>
-      </AppCard>
-
-      <AppCard padding="normal">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Productos Activos</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ activeProducts }}</p>
-          </div>
-          <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <CheckCircleIcon class="h-6 w-6 text-purple-600" />
-          </div>
-        </div>
-      </AppCard>
-
-      <AppCard padding="normal">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Stock Bajo</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ lowStockCount }}</p>
-          </div>
-          <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-            <ExclamationTriangleIcon class="h-6 w-6 text-red-600" />
-          </div>
-        </div>
-      </AppCard>
-    </div>
-
     <!-- Filters -->
     <AppCard padding="normal">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -71,10 +20,7 @@
           :icon-left="MagnifyingGlassIcon"
         />
 
-        <select
-          v-model="filters.categoria"
-          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
-        >
+        <select v-model="filters.categoria" class="input">
           <option value="">Todas las categorías</option>
           <option value="electronica">Electrónica</option>
           <option value="ropa">Ropa</option>
@@ -83,10 +29,7 @@
           <option value="otros">Otros</option>
         </select>
 
-        <select
-          v-model="filters.estado"
-          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
-        >
+        <select v-model="filters.estado" class="input">
           <option value="">Todos los estados</option>
           <option value="true">Activos</option>
           <option value="false">Inactivos</option>
@@ -116,7 +59,7 @@
             </div>
             <div>
               <p class="font-medium text-gray-900">{{ item.nombre }}</p>
-              <p class="text-sm text-gray-500 capitalize">{{ item.categoria }}</p>
+              <p class="text-sm text-gray-500">{{ item.categoria }}</p>
             </div>
           </div>
         </template>
@@ -145,14 +88,12 @@
             <button
               class="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
               @click="editProduct(item)"
-              title="Editar"
             >
               <PencilIcon class="h-5 w-5" />
             </button>
             <button
               class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               @click="confirmDelete(item)"
-              title="Eliminar"
             >
               <TrashIcon class="h-5 w-5" />
             </button>
@@ -179,7 +120,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-// import { useProductsStore } from '@/stores/products'
+//import { useProductsStore } from '@/stores/products'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
@@ -193,13 +134,10 @@ import {
   FunnelIcon,
   CubeIcon,
   PencilIcon,
-  TrashIcon,
-  ArchiveBoxIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
+  TrashIcon
 } from '@heroicons/vue/24/outline'
 
-// const productsStore = useProductsStore()
+//const productsStore = useProductsStore()
 
 const showModal = ref(false)
 const editingProduct = ref(null)
@@ -223,10 +161,8 @@ const products = ref([
     _id: '1',
     codigo: 'PROD-001',
     nombre: 'Laptop Dell XPS 15',
-    categoria: 'electronica',
-    descripcion: 'Laptop de alto rendimiento',
+    categoria: 'Electrónica',
     precio: 1500.00,
-    costo: 1200.00,
     stock: 25,
     stockMinimo: 10,
     activo: true
@@ -235,10 +171,8 @@ const products = ref([
     _id: '2',
     codigo: 'PROD-002',
     nombre: 'Mouse Logitech MX Master',
-    categoria: 'electronica',
-    descripcion: 'Mouse inalámbrico profesional',
+    categoria: 'Electrónica',
     precio: 100.00,
-    costo: 75.00,
     stock: 5,
     stockMinimo: 20,
     activo: true
@@ -247,37 +181,11 @@ const products = ref([
     _id: '3',
     codigo: 'PROD-003',
     nombre: 'Teclado Mecánico RGB',
-    categoria: 'electronica',
-    descripcion: 'Teclado gaming mecánico',
+    categoria: 'Electrónica',
     precio: 150.00,
-    costo: 100.00,
     stock: 45,
     stockMinimo: 15,
     activo: true
-  },
-  {
-    _id: '4',
-    codigo: 'PROD-004',
-    nombre: 'Monitor Samsung 27"',
-    categoria: 'electronica',
-    descripcion: 'Monitor 4K UHD',
-    precio: 600.00,
-    costo: 450.00,
-    stock: 15,
-    stockMinimo: 8,
-    activo: true
-  },
-  {
-    _id: '5',
-    codigo: 'PROD-005',
-    nombre: 'Webcam Logitech C920',
-    categoria: 'electronica',
-    descripcion: 'Cámara HD 1080p',
-    precio: 150.00,
-    costo: 100.00,
-    stock: 8,
-    stockMinimo: 15,
-    activo: false
   }
 ])
 
@@ -293,7 +201,7 @@ const filteredProducts = computed(() => {
   }
 
   if (filters.value.categoria) {
-    result = result.filter(p => p.categoria === filters.value.categoria)
+    result = result.filter(p => p.categoria.toLowerCase() === filters.value.categoria)
   }
 
   if (filters.value.estado) {
@@ -304,20 +212,7 @@ const filteredProducts = computed(() => {
   return result
 })
 
-const totalStock = computed(() => {
-  return products.value.reduce((sum, p) => sum + p.stock, 0)
-})
-
-const activeProducts = computed(() => {
-  return products.value.filter(p => p.activo).length
-})
-
-const lowStockCount = computed(() => {
-  return products.value.filter(p => p.stock <= p.stockMinimo).length
-})
-
 const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
   return new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'PEN'
@@ -338,11 +233,8 @@ const editProduct = (product) => {
 
 const confirmDelete = (product) => {
   if (confirm(`¿Está seguro de eliminar el producto ${product.nombre}?`)) {
-    const index = products.value.findIndex(p => p._id === product._id)
-    if (index !== -1) {
-      products.value.splice(index, 1)
-      alert('Producto eliminado correctamente')
-    }
+    // Implementar eliminación
+    console.log('Eliminando producto:', product)
   }
 }
 
@@ -350,24 +242,14 @@ const handleSubmit = async (productData) => {
   try {
     if (editingProduct.value) {
       // Actualizar producto
-      const index = products.value.findIndex(p => p._id === editingProduct.value._id)
-      if (index !== -1) {
-        products.value[index] = { ...products.value[index], ...productData }
-        alert('Producto actualizado correctamente')
-      }
+      console.log('Actualizando:', productData)
     } else {
       // Crear nuevo producto
-      const newProduct = {
-        _id: Date.now().toString(),
-        ...productData
-      }
-      products.value.push(newProduct)
-      alert('Producto creado correctamente')
+      console.log('Creando:', productData)
     }
     closeModal()
   } catch (error) {
     console.error('Error:', error)
-    alert('Error al guardar el producto')
   }
 }
 
@@ -382,24 +264,6 @@ const applyFilters = () => {
 }
 
 onMounted(() => {
-  // productsStore.fetchProducts()
-  console.log('ProductsView montado correctamente')
+  // Cargar productos
 })
 </script>
-
-<style scoped>
-.animation-fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>
