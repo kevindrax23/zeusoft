@@ -261,7 +261,7 @@
         <AppCard title="Acciones Rápidas">
           <div class="space-y-3">
             <AppButton variant="primary" class="w-full" @click="router.push('/facturas/crear')">
-              Nueva Factura
+              Nueva Compra
             </AppButton>
             <AppButton variant="secondary" class="w-full" @click="generateReport">
               Generar Reporte

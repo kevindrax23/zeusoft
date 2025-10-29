@@ -1,15 +1,16 @@
 <template>
-  <router-view />
+  <div id="app" class="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+    <router-view />
+  </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 
-const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 onMounted(() => {
-  // Verificar si hay un token guardado
-  authStore.checkAuth()
+  themeStore.loadTheme()
 })
 </script>

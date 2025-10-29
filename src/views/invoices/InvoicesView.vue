@@ -7,7 +7,7 @@
         <p class="text-gray-600 mt-1">Gestiona las facturas de tu negocio</p>
       </div>
       <AppButton variant="primary" :icon-left="PlusIcon" @click="router.push('/facturas/crear')">
-        Nueva Factura
+        Nueva Compra
       </AppButton>
     </div>
 
@@ -17,7 +17,9 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Total Facturado</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(stats.totalFacturado) }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">
+              {{ formatCurrency(stats.totalFacturado) }}
+            </p>
           </div>
           <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
             <CurrencyDollarIcon class="h-6 w-6 text-green-600" />
@@ -71,24 +73,19 @@
           :icon-left="MagnifyingGlassIcon"
         />
 
-        <select v-model="filters.estado" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white">
+        <select
+          v-model="filters.estado"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
+        >
           <option value="">Todos los estados</option>
           <option value="pendiente">Pendientes</option>
           <option value="pagada">Pagadas</option>
           <option value="anulada">Anuladas</option>
         </select>
 
-        <AppInput
-          v-model="filters.fechaInicio"
-          type="date"
-          placeholder="Fecha inicio"
-        />
+        <AppInput v-model="filters.fechaInicio" type="date" placeholder="Fecha inicio" />
 
-        <AppInput
-          v-model="filters.fechaFin"
-          type="date"
-          placeholder="Fecha fin"
-        />
+        <AppInput v-model="filters.fechaFin" type="date" placeholder="Fecha fin" />
       </div>
     </AppCard>
 
@@ -105,12 +102,36 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Factura</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                N° Factura
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Cliente
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Fecha
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Total
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Estado
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -120,12 +141,16 @@
               class="hover:bg-gray-50 transition-colors"
             >
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="font-mono font-medium text-primary-600">{{ invoice.numeroFactura }}</span>
+                <span class="font-mono font-medium text-primary-600">{{
+                  invoice.numeroFactura
+                }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div>
                   <p class="font-medium text-gray-900">{{ invoice.cliente?.nombre || 'N/A' }}</p>
-                  <p class="text-sm text-gray-500">{{ invoice.cliente?.numeroDocumento || 'N/A' }}</p>
+                  <p class="text-sm text-gray-500">
+                    {{ invoice.cliente?.numeroDocumento || 'N/A' }}
+                  </p>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -191,7 +216,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   EyeIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -201,7 +226,7 @@ const filters = ref({
   search: '',
   estado: '',
   fechaInicio: '',
-  fechaFin: ''
+  fechaFin: '',
 })
 
 const invoices = ref([])
@@ -209,7 +234,7 @@ const stats = ref({
   totalFacturado: 0,
   pendientes: 0,
   pagadas: 0,
-  anuladas: 0
+  anuladas: 0,
 })
 
 const filteredInvoices = computed(() => {
@@ -217,7 +242,7 @@ const filteredInvoices = computed(() => {
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    result = result.filter(i => {
+    result = result.filter((i) => {
       const matchesNumber = i.numeroFactura?.toLowerCase().includes(search)
       const matchesClient = i.cliente?.nombre?.toLowerCase().includes(search)
       return matchesNumber || matchesClient
@@ -225,18 +250,17 @@ const filteredInvoices = computed(() => {
   }
 
   if (filters.value.estado) {
-    result = result.filter(i => i.estado === filters.value.estado)
+    result = result.filter((i) => i.estado === filters.value.estado)
   }
 
   return result
 })
 
-
 const getStatusVariant = (status) => {
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
-    anulada: 'danger'
+    anulada: 'danger',
   }
   return variants[status] || 'gray'
 }
@@ -245,7 +269,7 @@ const getStatusLabel = (status) => {
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
-    anulada: 'Anulada'
+    anulada: 'Anulada',
   }
   return labels[status] || status
 }
@@ -271,7 +295,7 @@ const loadStats = async () => {
       totalFacturado: data.totalSales || 0,
       pendientes: data.pendingInvoices || 0,
       pagadas: data.paidInvoices || 0,
-      anuladas: data.canceledInvoices || 0
+      anuladas: data.canceledInvoices || 0,
     }
   } catch (error) {
     console.error('Error al cargar estadísticas:', error)

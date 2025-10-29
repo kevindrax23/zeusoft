@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Nueva Factura</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Nueva Compra</h1>
         <p class="text-gray-600 mt-1">Complete los datos de la factura</p>
       </div>
       <AppButton variant="secondary" @click="router.push('/facturas')"> Cancelar </AppButton>
@@ -160,7 +160,7 @@
                 <span class="font-medium">{{ formatCurrency(subtotal) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-600">IGV (18%):</span>
+                <span class="text-gray-600">IVA (19%):</span>
                 <span class="font-medium">{{ formatCurrency(igv) }}</span>
               </div>
               <div class="pt-2 border-t border-gray-200">
