@@ -41,7 +41,9 @@
           <div class="flex items-start gap-6">
             <!-- Avatar -->
             <div class="flex-shrink-0">
-              <div class="h-24 w-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+              <div
+                class="h-24 w-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg"
+              >
                 {{ getInitials(customer.nombre) }}
               </div>
             </div>
@@ -50,7 +52,9 @@
             <div class="flex-1 space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo / Razón Social</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Nombre Completo / Razón Social</label
+                  >
                   <p class="text-lg font-semibold text-gray-900">{{ customer.nombre }}</p>
                 </div>
                 <div>
@@ -63,11 +67,15 @@
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Tipo de Documento</label
+                  >
                   <p class="text-gray-900">{{ customer.tipoDocumento }}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Número de Documento</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Número de Documento</label
+                  >
                   <p class="font-mono text-gray-900">{{ customer.numeroDocumento }}</p>
                 </div>
               </div>
@@ -79,11 +87,15 @@
         <AppCard title="Información de Contacto">
           <div class="grid grid-cols-2 gap-6">
             <div class="flex items-start gap-3">
-              <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div
+                class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"
+              >
                 <EnvelopeIcon class="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Correo Electrónico</label
+                >
                 <p class="text-gray-900">{{ customer.email || 'No registrado' }}</p>
                 <a
                   v-if="customer.email"
@@ -96,7 +108,9 @@
             </div>
 
             <div class="flex items-start gap-3">
-              <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div
+                class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"
+              >
                 <PhoneIcon class="h-5 w-5 text-green-600" />
               </div>
               <div>
@@ -117,13 +131,17 @@
         <!-- Dirección -->
         <AppCard title="Dirección">
           <div class="flex items-start gap-3">
-            <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div
+              class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"
+            >
               <MapPinIcon class="h-5 w-5 text-purple-600" />
             </div>
             <div class="flex-1">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Calle / Avenida</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Calle / Avenida</label
+                  >
                   <p class="text-gray-900">{{ customer.direccion?.calle || 'No registrado' }}</p>
                 </div>
                 <div>
@@ -132,7 +150,9 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
-                  <p class="text-gray-900">{{ customer.direccion?.codigoPostal || 'No registrado' }}</p>
+                  <p class="text-gray-900">
+                    {{ customer.direccion?.codigoPostal || 'No registrado' }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
@@ -186,7 +206,9 @@
                 <span class="text-sm text-blue-700">Total Comprado</span>
                 <CurrencyDollarIcon class="h-5 w-5 text-blue-600" />
               </div>
-              <p class="text-2xl font-bold text-blue-900">{{ formatCurrency(stats.totalComprado) }}</p>
+              <p class="text-2xl font-bold text-blue-900">
+                {{ formatCurrency(stats.totalComprado) }}
+              </p>
             </div>
 
             <div class="p-4 bg-green-50 rounded-lg">
@@ -238,18 +260,10 @@
         <!-- Acciones Rápidas -->
         <AppCard title="Acciones Rápidas">
           <div class="space-y-3">
-            <AppButton
-              variant="primary"
-              class="w-full"
-              @click="router.push('/facturas/crear')"
-            >
+            <AppButton variant="primary" class="w-full" @click="router.push('/facturas/crear')">
               Nueva Factura
             </AppButton>
-            <AppButton
-              variant="secondary"
-              class="w-full"
-              @click="generateReport"
-            >
+            <AppButton variant="secondary" class="w-full" @click="generateReport">
               Generar Reporte
             </AppButton>
           </div>
@@ -264,11 +278,7 @@
       subtitle="Actualice la información del cliente"
       size="lg"
     >
-      <CustomerForm
-        :customer="customer"
-        @submit="handleUpdate"
-        @cancel="showEditModal = false"
-      />
+      <CustomerForm :customer="customer" @submit="handleUpdate" @cancel="showEditModal = false" />
     </AppModal>
   </div>
 </template>
@@ -282,6 +292,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import CustomerForm from '@/components/customers/CustomerForm.vue'
+import { formatCurrency, formatDate } from '@/config/settings'
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -293,7 +304,7 @@ import {
   DocumentTextIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
-  ClockIcon
+  ClockIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -306,57 +317,38 @@ const showEditModal = ref(false)
 
 const stats = computed(() => {
   const totalComprado = invoices.value
-    .filter(inv => inv.estado !== 'anulada')
+    .filter((inv) => inv.estado !== 'anulada')
     .reduce((sum, inv) => sum + inv.total, 0)
 
   const totalFacturas = invoices.value.length
 
-  const facturasPagadas = invoices.value.filter(inv => inv.estado === 'pagada').length
+  const facturasPagadas = invoices.value.filter((inv) => inv.estado === 'pagada').length
 
-  const ultimaCompra = invoices.value.length > 0
-    ? invoices.value[0].fechaEmision
-    : null
+  const ultimaCompra = invoices.value.length > 0 ? invoices.value[0].fechaEmision : null
 
   return {
     totalComprado,
     totalFacturas,
     facturasPagadas,
-    ultimaCompra
+    ultimaCompra,
   }
 })
 
 const getInitials = (name) => {
   if (!name) return '?'
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-}
-
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  } catch {
-    return 'N/A'
-  }
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 const getStatusVariant = (status) => {
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
-    anulada: 'danger'
+    anulada: 'danger',
   }
   return variants[status] || 'gray'
 }
@@ -365,7 +357,7 @@ const getStatusLabel = (status) => {
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
-    anulada: 'Anulada'
+    anulada: 'Anulada',
   }
   return labels[status] || status
 }
@@ -390,7 +382,7 @@ const loadInvoices = async () => {
     const response = await api.get('/invoices')
     // Filtrar facturas de este cliente
     invoices.value = (response.data || [])
-      .filter(inv => inv.cliente?._id === customerId || inv.cliente === customerId)
+      .filter((inv) => inv.cliente?._id === customerId || inv.cliente === customerId)
       .sort((a, b) => new Date(b.fechaEmision) - new Date(a.fechaEmision))
   } catch (error) {
     console.error('Error al cargar facturas:', error)

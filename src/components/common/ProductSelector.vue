@@ -24,14 +24,14 @@
           class="w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left flex items-center justify-between group"
         >
           <div class="flex items-center gap-3 flex-1">
-            <div class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+            <div
+              class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-primary-100 transition-colors"
+            >
               <CubeIcon class="h-6 w-6 text-gray-400 group-hover:text-primary-600" />
             </div>
             <div class="flex-1">
               <p class="font-medium text-gray-900">{{ product.nombre }}</p>
-              <p class="text-sm text-gray-500">
-                {{ product.codigo }} • {{ product.categoria }}
-              </p>
+              <p class="text-sm text-gray-500">{{ product.codigo }} • {{ product.categoria }}</p>
             </div>
           </div>
           <div class="text-right">
@@ -49,6 +49,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
+import { formatCurrency } from '@/config/settings'
 import AppInput from './AppInput.vue'
 import { MagnifyingGlassIcon, CubeIcon } from '@heroicons/vue/24/outline'
 
@@ -62,18 +63,10 @@ const filteredProducts = computed(() => {
   if (!searchQuery.value) return products.value
 
   const search = searchQuery.value.toLowerCase()
-  return products.value.filter(p =>
-    p.nombre.toLowerCase().includes(search) ||
-    p.codigo.toLowerCase().includes(search)
+  return products.value.filter(
+    (p) => p.nombre.toLowerCase().includes(search) || p.codigo.toLowerCase().includes(search),
   )
 })
-
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
 
 const getStockClass = (product) => {
   if (product.stock <= product.stockMinimo) return 'text-red-600 font-semibold'

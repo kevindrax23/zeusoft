@@ -9,9 +9,9 @@
           required
         >
           <option value="">Seleccione</option>
-          <option value="DNI">DNI</option>
-          <option value="RUC">RUC</option>
-          <option value="CE">Carnet de Extranjería</option>
+          <option value="CC">Cédula de Ciudadanía</option>
+          <option value="CE">Cédula de Extranjería</option>
+          <option value="NIT">NIT</option>
           <option value="PASAPORTE">Pasaporte</option>
         </select>
       </div>
@@ -19,7 +19,7 @@
       <AppInput
         v-model="form.numeroDocumento"
         label="Número de Documento"
-        placeholder="12345678"
+        placeholder="1234567890"
         required
         :error="errors.numeroDocumento"
       />
@@ -44,8 +44,8 @@
       <AppInput
         v-model="form.telefono"
         type="tel"
-        label="Teléfono"
-        placeholder="987654321"
+        label="Teléfono / Celular"
+        placeholder="3001234567"
       />
     </div>
 
@@ -55,27 +55,27 @@
       <div class="space-y-4">
         <AppInput
           v-model="form.direccion.calle"
-          label="Calle/Avenida"
-          placeholder="Av. Principal 123"
+          label="Dirección"
+          placeholder="Calle 100 #15-20"
         />
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AppInput
             v-model="form.direccion.ciudad"
             label="Ciudad"
-            placeholder="Lima"
+            placeholder="Bogotá"
           />
 
           <AppInput
             v-model="form.direccion.codigoPostal"
             label="Código Postal"
-            placeholder="15001"
+            placeholder="110111"
           />
 
           <AppInput
             v-model="form.direccion.pais"
             label="País"
-            placeholder="Perú"
+            placeholder="Colombia"
           />
         </div>
       </div>
@@ -127,7 +127,7 @@ const form = ref({
     calle: '',
     ciudad: '',
     codigoPostal: '',
-    pais: 'Perú'
+    pais: 'Colombia'
   },
   activo: true
 })
@@ -143,7 +143,7 @@ watch(() => props.customer, (newCustomer) => {
         calle: '',
         ciudad: '',
         codigoPostal: '',
-        pais: 'Perú'
+        pais: 'Colombia'
       }
     }
   }

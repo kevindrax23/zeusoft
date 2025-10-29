@@ -21,22 +21,15 @@
       'fixed top-0 left-0 z-50 h-screen bg-white border-r border-gray-200 flex flex-col shadow-lg transition-all duration-300',
       isCollapsed && !show ? 'w-16' : 'w-64',
       'lg:translate-x-0',
-      show || !isMobile ? 'translate-x-0' : '-translate-x-full'
+      show || !isMobile ? 'translate-x-0' : '-translate-x-full',
     ]"
   >
     <!-- Logo -->
-    <div class="h-16 flex items-center justify-center px-6 border-b border-gray-200">
-      <div class="flex items-center gap-3">
-        <div class="h-8 w-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center flex-shrink-0">
-          <ShoppingBagIcon class="h-5 w-5 text-white" />
-        </div>
-        <span
-          v-if="!isCollapsed || show"
-          class="text-xl font-bold text-gray-900 whitespace-nowrap"
-        >
-          FacturaApp
-        </span>
-      </div>
+    <div class="logo">
+      <img class="zeus" src="../../assets/images/logo.svg" alt="" />
+      <span v-if="!isCollapsed || show" class="text-xl font-bold text-gray-900 whitespace-nowrap">
+        ZeusSoft
+      </span>
     </div>
 
     <!-- Navigation -->
@@ -56,7 +49,7 @@
               ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-600'
               : 'text-gray-700 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300',
             'group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-r-lg transition-all duration-150',
-            isCollapsed && !show ? 'justify-center' : ''
+            isCollapsed && !show ? 'justify-center' : '',
           ]"
           :title="isCollapsed && !show ? item.name : ''"
         >
@@ -64,7 +57,7 @@
             :is="item.icon"
             :class="[
               isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600',
-              'h-5 w-5 flex-shrink-0'
+              'h-5 w-5 flex-shrink-0',
             ]"
           />
           <span v-if="!isCollapsed || show" class="flex-1">
@@ -83,12 +76,13 @@
     <!-- User Section y Logout -->
     <div class="border-t border-gray-200">
       <!-- User Info -->
-      <div
-        v-if="!isCollapsed || show"
-        class="p-4"
-      >
-        <div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+      <div v-if="!isCollapsed || show" class="p-4">
+        <div
+          class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0"
+          >
             {{ userInitials }}
           </div>
           <div class="flex-1 min-w-0">
@@ -99,11 +93,10 @@
       </div>
 
       <!-- Avatar solo para móvil colapsado -->
-      <div
-        v-if="isCollapsed && !show"
-        class="p-4 flex justify-center"
-      >
-        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
+      <div v-if="isCollapsed && !show" class="p-4 flex justify-center">
+        <div
+          class="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold"
+        >
           {{ userInitials }}
         </div>
       </div>
@@ -115,7 +108,7 @@
           :class="[
             'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
             'text-red-600 hover:bg-red-50 border border-red-200 hover:border-red-300',
-            isCollapsed && !show ? 'justify-center' : ''
+            isCollapsed && !show ? 'justify-center' : '',
           ]"
           :title="isCollapsed && !show ? 'Cerrar Sesión' : ''"
         >
@@ -133,19 +126,17 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import {
   HomeIcon,
-  ShoppingBagIcon,
   CubeIcon,
   DocumentTextIcon,
   UsersIcon,
   ChartBarIcon,
-  ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
 defineProps({
   show: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['close'])
@@ -176,14 +167,19 @@ const navigation = [
   { name: 'Productos', icon: CubeIcon, to: '/productos', badge: '12' },
   { name: 'Facturas', icon: DocumentTextIcon, to: '/facturas' },
   { name: 'Clientes', icon: UsersIcon, to: '/clientes' },
-  { name: 'Reportes', icon: ChartBarIcon, to: '/reportes' }
+  { name: 'Reportes', icon: ChartBarIcon, to: '/reportes' },
 ]
 
 const userName = computed(() => authStore.user?.nombre || 'Usuario')
 const userEmail = computed(() => authStore.user?.email || 'usuario@email.com')
 const userInitials = computed(() => {
   const name = userName.value
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 })
 
 const navigateTo = (path) => {
@@ -204,3 +200,19 @@ const handleLogout = () => {
   }
 }
 </script>
+
+<style scoped>
+.logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  margin-right: 20px;
+  gap:10px
+}
+
+.zeus {
+  width: 50px;
+}
+</style>

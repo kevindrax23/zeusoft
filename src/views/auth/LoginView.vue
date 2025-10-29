@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4"
+  >
     <div class="w-full max-w-md">
       <!-- Logo y Título -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center h-16 w-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl mb-4 shadow-lg">
-          <ShoppingBagIcon class="h-8 w-8 text-white" />
-        </div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">FacturaApp</h1>
+      <div class="logo">
+        <img src="../../assets/images/logo.svg" alt="" />
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">ZeusSoft</h1>
         <p class="text-gray-600">Sistema de Facturación e Inventario</p>
       </div>
 
@@ -95,13 +95,7 @@ import AppCard from '@/components/common/AppCard.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppAlert from '@/components/common/AppAlert.vue'
-import {
-  ShoppingBagIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  EyeIcon,
-  EyeSlashIcon
-} from '@heroicons/vue/24/outline'
+import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -109,12 +103,12 @@ const authStore = useAuthStore()
 const form = ref({
   email: '',
   password: '',
-  remember: false
+  remember: false,
 })
 
 const errors = ref({
   email: '',
-  password: ''
+  password: '',
 })
 
 const showPassword = ref(false)
@@ -136,7 +130,7 @@ const handleLogin = async () => {
 
   const success = await authStore.login({
     email: form.value.email,
-    password: form.value.password
+    password: form.value.password,
   })
 
   if (success) {
@@ -144,3 +138,13 @@ const handleLogin = async () => {
   }
 }
 </script>
+
+<style scoped>
+.logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+</style>

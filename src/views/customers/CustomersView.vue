@@ -183,6 +183,7 @@ import AppTable from '@/components/common/AppTable.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import CustomerForm from '@/components/customers/CustomerForm.vue'
+
 import {
   PlusIcon,
   MagnifyingGlassIcon,

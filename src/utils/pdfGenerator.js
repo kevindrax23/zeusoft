@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-
+import { appSettings, formatCurrency } from '@/config/settings'
 
 export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   const pdf = new jsPDF('p', 'mm', 'a4')
@@ -8,17 +8,16 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   const margin = 20
   let currentY = margin
 
-  // Configuración de empresa por defecto
+  // Configuración de empresa
   const company = {
-    nombre: companyInfo.nombre || 'EMPRESA S.A.C.',
-    ruc: companyInfo.ruc || '20123456789',
-    direccion: companyInfo.direccion || 'Av. Principal 123, Lima - Perú',
-    telefono: companyInfo.telefono || '(01) 234-5678',
-    email: companyInfo.email || 'ventas@empresa.com'
+    nombre: companyInfo.nombre || appSettings.company.nombre,
+    nit: companyInfo.nit || appSettings.company.nit,
+    direccion: companyInfo.direccion || appSettings.company.direccion,
+    telefono: companyInfo.telefono || appSettings.company.telefono,
+    email: companyInfo.email || appSettings.company.email
   }
 
   // ==================== HEADER ====================
-  // Logo o nombre de la empresa
   pdf.setFontSize(20)
   pdf.setFont('helvetica', 'bold')
   pdf.text(company.nombre, margin, currentY)
@@ -26,7 +25,7 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
 
   pdf.setFontSize(9)
   pdf.setFont('helvetica', 'normal')
-  pdf.text(`RUC: ${company.ruc}`, margin, currentY)
+  pdf.text(`NIT: ${company.nit}`, margin, currentY)
   currentY += 5
   pdf.text(company.direccion, margin, currentY)
   currentY += 5
@@ -39,10 +38,9 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   currentY += 10
 
   // ==================== FACTURA INFO ====================
-  // Título de factura y número
   pdf.setFontSize(16)
   pdf.setFont('helvetica', 'bold')
-  const invoiceTitle = 'FACTURA ELECTRÓNICA'
+  const invoiceTitle = 'FACTURA DE VENTA'
   const titleWidth = pdf.getTextWidth(invoiceTitle)
   pdf.text(invoiceTitle, pageWidth - margin - titleWidth, currentY)
 
@@ -56,7 +54,7 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   // Fecha y estado
   pdf.setFontSize(10)
   pdf.setFont('helvetica', 'normal')
-  const fecha = new Date(invoice.fechaEmision).toLocaleDateString('es-PE', {
+  const fecha = new Date(invoice.fechaEmision).toLocaleDateString('es-CO', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -101,7 +99,6 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   pdf.text('DETALLE DE PRODUCTOS', margin, currentY)
   currentY += 7
 
-  // Headers de la tabla
   const colWidths = {
     producto: 80,
     cantidad: 25,
@@ -129,7 +126,6 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   // Productos
   pdf.setFont('helvetica', 'normal')
   invoice.items.forEach((item, index) => {
-    // Verificar si necesitamos una nueva página
     if (currentY > pageHeight - 50) {
       pdf.addPage()
       currentY = margin
@@ -137,7 +133,6 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
 
     const rowY = currentY
 
-    // Producto
     const productName = item.nombre.length > 40
       ? item.nombre.substring(0, 37) + '...'
       : item.nombre
@@ -148,18 +143,12 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
     pdf.setFontSize(10)
     pdf.setTextColor(0, 0, 0)
 
-    // Cantidad
     pdf.text(item.cantidad.toString(), startX + colWidths.producto + 5, rowY)
-
-    // Precio unitario
     pdf.text(formatCurrency(item.precioUnitario), startX + colWidths.producto + colWidths.cantidad + 5, rowY)
-
-    // Subtotal
     pdf.text(formatCurrency(item.subtotal), startX + colWidths.producto + colWidths.cantidad + colWidths.precio + 5, rowY)
 
     currentY += 10
 
-    // Línea separadora
     if (index < invoice.items.length - 1) {
       pdf.setDrawColor(220, 220, 220)
       pdf.line(startX, currentY - 2, pageWidth - margin, currentY - 2)
@@ -171,23 +160,19 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   // ==================== TOTALES ====================
   const totalsX = pageWidth - margin - 60
 
-  // Subtotal
   pdf.setFont('helvetica', 'normal')
   pdf.text('Subtotal:', totalsX - 30, currentY)
   pdf.text(formatCurrency(invoice.subtotal), totalsX, currentY)
   currentY += 7
 
-  // IGV
-  pdf.text('IGV (18%):', totalsX - 30, currentY)
+  pdf.text('IVA (19%):', totalsX - 30, currentY)
   pdf.text(formatCurrency(invoice.montoImpuesto), totalsX, currentY)
   currentY += 7
 
-  // Línea antes del total
   pdf.setLineWidth(0.5)
   pdf.line(totalsX - 35, currentY, pageWidth - margin, currentY)
   currentY += 7
 
-  // Total
   pdf.setFontSize(12)
   pdf.setFont('helvetica', 'bold')
   pdf.text('TOTAL:', totalsX - 30, currentY)
@@ -196,13 +181,18 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   // ==================== NOTAS ====================
   if (invoice.notas) {
     currentY += 15
+
+    if (currentY > pageHeight - 40) {
+      pdf.addPage()
+      currentY = margin
+    }
+
     pdf.setFontSize(10)
     pdf.setFont('helvetica', 'bold')
     pdf.text('NOTAS:', margin, currentY)
     currentY += 6
     pdf.setFont('helvetica', 'normal')
 
-    // Dividir texto largo en múltiples líneas
     const notasLines = pdf.splitTextToSize(invoice.notas, pageWidth - 2 * margin)
     notasLines.forEach(line => {
       if (currentY > pageHeight - 30) {
@@ -226,26 +216,18 @@ export const generateInvoicePDF = async (invoice, companyInfo = {}) => {
   return pdf
 }
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
 const getStatusLabel = (status) => {
   const labels = {
     pagada: 'PAGADA',
     pendiente: 'PENDIENTE',
     anulada: 'ANULADA'
   }
-  return labels[status] || status
+  return labels[status] || status.toUpperCase()
 }
 
-export const downloadInvoicePDF = async (invoice) => {
+export const downloadInvoicePDF = async (invoice, companyInfo = {}) => {
   try {
-    const pdf = await generateInvoicePDF(invoice)
+    const pdf = await generateInvoicePDF(invoice, companyInfo)
     const filename = `Factura_${invoice.numeroFactura}.pdf`
     pdf.save(filename)
     return true
@@ -255,20 +237,21 @@ export const downloadInvoicePDF = async (invoice) => {
   }
 }
 
-export const printInvoice = async (invoice) => {
+export const printInvoice = async (invoice, companyInfo = {}) => {
   try {
-    const pdf = await generateInvoicePDF(invoice)
+    const pdf = await generateInvoicePDF(invoice, companyInfo)
 
-    // Abrir en nueva ventana para imprimir
     const pdfBlob = pdf.output('blob')
     const pdfUrl = URL.createObjectURL(pdfBlob)
 
-    const printWindow = window.open(pdfUrl)
+    const printWindow = window.open(pdfUrl, '_blank')
 
     if (printWindow) {
       printWindow.onload = () => {
         printWindow.print()
       }
+    } else {
+      alert('Por favor, permita las ventanas emergentes para imprimir')
     }
 
     return true

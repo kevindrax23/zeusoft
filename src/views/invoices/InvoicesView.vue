@@ -182,6 +182,7 @@ import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
+import { formatCurrency, formatDate } from '@/config/settings'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -230,27 +231,6 @@ const filteredInvoices = computed(() => {
   return result
 })
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  } catch {
-    return 'N/A'
-  }
-}
 
 const getStatusVariant = (status) => {
   const variants = {

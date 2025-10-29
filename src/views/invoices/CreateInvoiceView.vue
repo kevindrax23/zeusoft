@@ -6,9 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-900">Nueva Factura</h1>
         <p class="text-gray-600 mt-1">Complete los datos de la factura</p>
       </div>
-      <AppButton variant="secondary" @click="router.push('/facturas')">
-        Cancelar
-      </AppButton>
+      <AppButton variant="secondary" @click="router.push('/facturas')"> Cancelar </AppButton>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -27,11 +25,7 @@
                 required
               >
                 <option value="">Seleccione un cliente</option>
-                <option
-                  v-for="customer in customers"
-                  :key="customer._id"
-                  :value="customer._id"
-                >
+                <option v-for="customer in customers" :key="customer._id" :value="customer._id">
                   {{ customer.nombre }} - {{ customer.numeroDocumento }}
                 </option>
               </select>
@@ -74,7 +68,10 @@
             </AppButton>
 
             <!-- Lista de Productos Seleccionados -->
-            <div v-if="invoiceItems.length === 0" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+            <div
+              v-if="invoiceItems.length === 0"
+              class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg"
+            >
               <CubeIcon class="h-12 w-12 text-gray-400 mx-auto mb-2" />
               <p class="text-gray-500">No hay productos agregados</p>
             </div>
@@ -222,6 +219,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import ProductSelector from '@/components/common/ProductSelector.vue'
 import { PlusIcon, CubeIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { formatCurrency } from '@/config/settings'
 
 const router = useRouter()
 
@@ -233,7 +231,7 @@ const showProductSelector = ref(false)
 const loading = ref(false)
 
 const selectedCustomer = computed(() => {
-  return customers.value.find(c => c._id === selectedCustomerId.value)
+  return customers.value.find((c) => c._id === selectedCustomerId.value)
 })
 
 const subtotal = computed(() => {
@@ -241,7 +239,7 @@ const subtotal = computed(() => {
 })
 
 const igv = computed(() => {
-  return subtotal.value * 0.18
+  return subtotal.value * 0.19
 })
 
 const total = computed(() => {
@@ -256,14 +254,6 @@ const canCreateInvoice = computed(() => {
   return selectedCustomerId.value && invoiceItems.value.length > 0
 })
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
 const loadCustomers = async () => {
   try {
     const response = await api.get('/customers?activo=true')
@@ -275,7 +265,7 @@ const loadCustomers = async () => {
 
 const addProduct = (product) => {
   // Verificar si el producto ya está en la lista
-  const existingItem = invoiceItems.value.find(item => item.producto === product._id)
+  const existingItem = invoiceItems.value.find((item) => item.producto === product._id)
 
   if (existingItem) {
     if (existingItem.cantidad < product.stock) {
@@ -292,7 +282,7 @@ const addProduct = (product) => {
       cantidad: 1,
       precioUnitario: product.precio,
       subtotal: product.precio,
-      stockDisponible: product.stock
+      stockDisponible: product.stock,
     })
   }
 
@@ -319,11 +309,11 @@ const createInvoice = async () => {
 
     const invoiceData = {
       cliente: selectedCustomerId.value,
-      items: invoiceItems.value.map(item => ({
+      items: invoiceItems.value.map((item) => ({
         producto: item.producto,
-        cantidad: item.cantidad
+        cantidad: item.cantidad,
       })),
-      notas: notas.value
+      notas: notas.value,
     }
 
     await api.post('/invoices', invoiceData)

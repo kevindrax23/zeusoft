@@ -176,11 +176,7 @@
       subtitle="Complete los datos del producto"
       size="lg"
     >
-      <ProductForm
-        :product="editingProduct"
-        @submit="handleSubmit"
-        @cancel="closeModal"
-      />
+      <ProductForm :product="editingProduct" @submit="handleSubmit" @cancel="closeModal" />
     </AppModal>
   </div>
 </template>
@@ -195,6 +191,7 @@ import AppTable from '@/components/common/AppTable.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import ProductForm from '@/components/products/ProductForm.vue'
+import { formatCurrency } from '@/config/settings'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -204,7 +201,7 @@ import {
   TrashIcon,
   ArchiveBoxIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline'
 
 const showModal = ref(false)
@@ -213,7 +210,7 @@ const loading = ref(false)
 const filters = ref({
   search: '',
   categoria: '',
-  estado: ''
+  estado: '',
 })
 
 const columns = [
@@ -221,7 +218,7 @@ const columns = [
   { key: 'nombre', label: 'Producto' },
   { key: 'precio', label: 'Precio' },
   { key: 'stock', label: 'Stock' },
-  { key: 'activo', label: 'Estado' }
+  { key: 'activo', label: 'Estado' },
 ]
 
 const products = ref([])
@@ -231,7 +228,7 @@ const filteredProducts = computed(() => {
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    result = result.filter(p => {
+    result = result.filter((p) => {
       const matchesName = p.nombre?.toLowerCase().includes(search)
       const matchesCode = p.codigo?.toLowerCase().includes(search)
       return matchesName || matchesCode
@@ -239,12 +236,12 @@ const filteredProducts = computed(() => {
   }
 
   if (filters.value.categoria) {
-    result = result.filter(p => p.categoria === filters.value.categoria)
+    result = result.filter((p) => p.categoria === filters.value.categoria)
   }
 
   if (filters.value.estado !== '') {
     const activo = filters.value.estado === 'true'
-    result = result.filter(p => p.activo === activo)
+    result = result.filter((p) => p.activo === activo)
   }
 
   return result
@@ -255,20 +252,12 @@ const totalStock = computed(() => {
 })
 
 const activeProducts = computed(() => {
-  return products.value.filter(p => p.activo).length
+  return products.value.filter((p) => p.activo).length
 })
 
 const lowStockCount = computed(() => {
-  return products.value.filter(p => p.stock <= p.stockMinimo).length
+  return products.value.filter((p) => p.stock <= p.stockMinimo).length
 })
-
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
 
 const getStockClass = (item) => {
   if (!item) return 'font-semibold text-gray-900'
@@ -304,7 +293,7 @@ const confirmDelete = async (product) => {
   if (confirm(`¿Está seguro de eliminar el producto ${product.nombre}?`)) {
     try {
       await api.delete(`/products/${product._id}`)
-      products.value = products.value.filter(p => p._id !== product._id)
+      products.value = products.value.filter((p) => p._id !== product._id)
       alert('Producto eliminado correctamente')
     } catch (error) {
       console.error('Error al eliminar:', error)
@@ -320,7 +309,7 @@ const handleSubmit = async (productData) => {
     if (editingProduct.value && editingProduct.value._id) {
       // Actualizar producto
       const response = await api.put(`/products/${editingProduct.value._id}`, productData)
-      const index = products.value.findIndex(p => p._id === editingProduct.value._id)
+      const index = products.value.findIndex((p) => p._id === editingProduct.value._id)
       if (index !== -1) {
         products.value[index] = response.data
       }

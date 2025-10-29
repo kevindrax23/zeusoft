@@ -264,6 +264,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import AppModal from '@/components/common/AppModal.vue'
 import ProductForm from '@/components/products/ProductForm.vue'
+import { formatCurrency, formatDate } from '@/config/settings'
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -319,29 +320,7 @@ const stockClasses = computed(() => {
   return 'bg-green-50 border border-green-200 text-green-700'
 })
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch {
-    return 'N/A'
-  }
-}
 
 const loadProduct = async () => {
   try {

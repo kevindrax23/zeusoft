@@ -6,9 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-900">Reportes</h1>
         <p class="text-gray-600 mt-1">Análisis y reportes de tu negocio</p>
       </div>
-      <AppButton variant="primary" :icon-left="ArrowDownTrayIcon">
-        Exportar Reporte
-      </AppButton>
+      <AppButton variant="primary" :icon-left="ArrowDownTrayIcon"> Exportar Reporte </AppButton>
     </div>
 
     <!-- Period Filter -->
@@ -51,7 +49,9 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Ventas Totales</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(stats.totalSales) }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">
+              {{ formatCurrency(stats.totalSales) }}
+            </p>
             <p class="text-xs text-green-600 mt-1 flex items-center">
               <ArrowTrendingUpIcon class="h-3 w-3 mr-1" />
               Total facturado
@@ -146,11 +146,31 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidades</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                #
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Producto
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Categoría
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Unidades
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Ingresos
+              </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -174,15 +194,21 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 capitalize">
+                <span
+                  class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 capitalize"
+                >
                   {{ product.categoria }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-semibold text-gray-900">{{ product.cantidadVendida }}</span>
+                <span class="text-sm font-semibold text-gray-900">{{
+                  product.cantidadVendida
+                }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-semibold text-green-600">{{ formatCurrency(product.ingresos) }}</span>
+                <span class="text-sm font-semibold text-green-600">{{
+                  formatCurrency(product.ingresos)
+                }}</span>
               </td>
             </tr>
           </tbody>
@@ -209,7 +235,9 @@
             </div>
             <div>
               <p class="font-medium text-gray-900">{{ invoice.numeroFactura }}</p>
-              <p class="text-sm text-gray-500">{{ invoice.cliente?.nombre }} - {{ formatDate(invoice.fechaEmision) }}</p>
+              <p class="text-sm text-gray-500">
+                {{ invoice.cliente?.nombre }} - {{ formatDate(invoice.fechaEmision) }}
+              </p>
             </div>
           </div>
           <div class="text-right">
@@ -232,6 +260,7 @@ import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
+import { formatCurrency, formatDate } from '@/config/settings'
 import {
   ArrowDownTrayIcon,
   FunnelIcon,
@@ -241,7 +270,7 @@ import {
   UsersIcon,
   ChartBarIcon,
   ChartPieIcon,
-  ArrowTrendingUpIcon
+  ArrowTrendingUpIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -249,7 +278,7 @@ const router = useRouter()
 const selectedPeriod = ref('month')
 const dateRange = ref({
   start: '',
-  end: ''
+  end: '',
 })
 
 const stats = ref({
@@ -258,39 +287,17 @@ const stats = ref({
   paidInvoices: 0,
   productsSold: 0,
   uniqueProducts: 0,
-  totalCustomers: 0
+  totalCustomers: 0,
 })
 
 const topProducts = ref([])
 const recentInvoices = ref([])
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  } catch {
-    return 'N/A'
-  }
-}
-
 const getStatusVariant = (status) => {
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
-    anulada: 'danger'
+    anulada: 'danger',
   }
   return variants[status] || 'gray'
 }
@@ -299,7 +306,7 @@ const getStatusLabel = (status) => {
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
-    anulada: 'Anulada'
+    anulada: 'Anulada',
   }
   return labels[status] || status
 }
@@ -315,7 +322,7 @@ const loadStats = async () => {
       paidInvoices: data.paidInvoices || 0,
       productsSold: 0,
       uniqueProducts: 0,
-      totalCustomers: 0
+      totalCustomers: 0,
     }
   } catch (error) {
     console.error('Error al cargar estadísticas:', error)
@@ -335,9 +342,9 @@ const loadRecentInvoices = async () => {
     const uniqueProductIds = new Set()
     const productSales = {}
 
-    invoices.forEach(invoice => {
+    invoices.forEach((invoice) => {
       if (invoice.estado !== 'anulada') {
-        invoice.items?.forEach(item => {
+        invoice.items?.forEach((item) => {
           totalProductsSold += item.cantidad
           uniqueProductIds.add(item.producto?._id || item.producto)
 
@@ -349,7 +356,7 @@ const loadRecentInvoices = async () => {
               codigo: item.codigo,
               categoria: item.producto?.categoria || 'otros',
               cantidadVendida: 0,
-              ingresos: 0
+              ingresos: 0,
             }
           }
           productSales[productId].cantidadVendida += item.cantidad
@@ -365,7 +372,6 @@ const loadRecentInvoices = async () => {
     topProducts.value = Object.values(productSales)
       .sort((a, b) => b.cantidadVendida - a.cantidadVendida)
       .slice(0, 5)
-
   } catch (error) {
     console.error('Error al cargar facturas recientes:', error)
   }
@@ -383,7 +389,7 @@ const loadCustomers = async () => {
 const applyFilters = () => {
   console.log('Aplicando filtros:', {
     period: selectedPeriod.value,
-    dateRange: dateRange.value
+    dateRange: dateRange.value,
   })
   // Implementar lógica de filtrado por fechas
 }

@@ -72,8 +72,12 @@
                 <p class="font-medium text-gray-900">{{ invoice.cliente?.nombre || 'N/A' }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600">{{ invoice.cliente?.tipoDocumento || 'Documento' }}</p>
-                <p class="font-medium text-gray-900">{{ invoice.cliente?.numeroDocumento || 'N/A' }}</p>
+                <p class="text-sm text-gray-600">
+                  {{ invoice.cliente?.tipoDocumento || 'Documento' }}
+                </p>
+                <p class="font-medium text-gray-900">
+                  {{ invoice.cliente?.numeroDocumento || 'N/A' }}
+                </p>
               </div>
               <div>
                 <p class="text-sm text-gray-600">Email</p>
@@ -93,17 +97,35 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unit.</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Producto
+                  </th>
+                  <th
+                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Cantidad
+                  </th>
+                  <th
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Precio Unit.
+                  </th>
+                  <th
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Subtotal
+                  </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(item, index) in invoice.items" :key="index" class="hover:bg-gray-50">
                   <td class="px-6 py-4">
                     <div class="flex items-center">
-                      <div class="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div
+                        class="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center"
+                      >
                         <CubeIcon class="h-5 w-5 text-gray-400" />
                       </div>
                       <div class="ml-4">
@@ -119,7 +141,9 @@
                     <span class="text-gray-900">{{ formatCurrency(item.precioUnitario) }}</span>
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <span class="font-semibold text-gray-900">{{ formatCurrency(item.subtotal) }}</span>
+                    <span class="font-semibold text-gray-900">{{
+                      formatCurrency(item.subtotal)
+                    }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -146,7 +170,9 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600">IGV (18%):</span>
-              <span class="font-medium text-gray-900">{{ formatCurrency(invoice.montoImpuesto) }}</span>
+              <span class="font-medium text-gray-900">{{
+                formatCurrency(invoice.montoImpuesto)
+              }}</span>
             </div>
             <div class="pt-4 border-t border-gray-200">
               <div class="flex justify-between">
@@ -213,11 +239,7 @@
               Anular Factura
             </AppButton>
 
-            <AppButton
-              variant="secondary"
-              class="w-full"
-              @click="sendEmail"
-            >
+            <AppButton variant="secondary" class="w-full" @click="sendEmail">
               Enviar por Email
             </AppButton>
           </div>
@@ -235,6 +257,7 @@ import { downloadInvoicePDF, printInvoice } from '@/utils/pdfGenerator'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
+import { formatCurrency, formatDate, formatDateTime } from '@/config/settings'
 import {
   ArrowLeftIcon,
   PrinterIcon,
@@ -242,7 +265,7 @@ import {
   DocumentTextIcon,
   CubeIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -261,49 +284,11 @@ const cantidadTotal = computed(() => {
   return invoice.value?.items?.reduce((sum, item) => sum + item.cantidad, 0) || 0
 })
 
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'S/. 0.00'
-  return new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  } catch {
-    return 'N/A'
-  }
-}
-
-const formatDateTime = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch {
-    return 'N/A'
-  }
-}
-
 const getStatusVariant = (status) => {
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
-    anulada: 'danger'
+    anulada: 'danger',
   }
   return variants[status] || 'gray'
 }
@@ -312,7 +297,7 @@ const getStatusLabel = (status) => {
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
-    anulada: 'Anulada'
+    anulada: 'Anulada',
   }
   return labels[status] || status
 }
@@ -410,4 +395,3 @@ onMounted(() => {
   }
 }
 </style>
-  
