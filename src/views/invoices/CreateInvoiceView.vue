@@ -6,203 +6,209 @@
         <h1 class="text-2xl font-bold text-gray-900">Nueva Factura</h1>
         <p class="text-gray-600 mt-1">Complete los datos de la factura</p>
       </div>
-      <AppButton variant="secondary" :icon-left="ArrowLeftIcon" @click="router.push('/facturas')">
-        Volver
+      <AppButton variant="secondary" @click="router.push('/facturas')">
+        Cancelar
       </AppButton>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Cliente y Datos Generales -->
-      <AppCard title="Información del Cliente">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="md:col-span-2">
-            <label class="label">Cliente *</label>
-            <div class="flex gap-3">
-              <select v-model="form.clienteId" class="input flex-1" required>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulario Principal -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Selección de Cliente -->
+        <AppCard title="Información del Cliente">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Seleccionar Cliente *
+              </label>
+              <select
+                v-model="selectedCustomerId"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
+                required
+              >
                 <option value="">Seleccione un cliente</option>
-                <option v-for="customer in customers" :key="customer._id" :value="customer._id">
+                <option
+                  v-for="customer in customers"
+                  :key="customer._id"
+                  :value="customer._id"
+                >
                   {{ customer.nombre }} - {{ customer.numeroDocumento }}
                 </option>
               </select>
-              <AppButton type="button" variant="outline" @click="showCustomerModal = true">
-                Nuevo Cliente
-              </AppButton>
             </div>
-          </div>
 
-          <AppInput
-            v-model="form.fechaEmision"
-            type="date"
-            label="Fecha de Emisión"
-            required
-          />
-
-          <AppInput
-            v-model="form.fechaVencimiento"
-            type="date"
-            label="Fecha de Vencimiento"
-          />
-
-          <div>
-            <label class="label">Método de Pago *</label>
-            <select v-model="form.metodoPago" class="input" required>
-              <option value="">Seleccione método</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="tarjeta">Tarjeta</option>
-              <option value="transferencia">Transferencia</option>
-              <option value="credito">Crédito</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="label">Estado</label>
-            <select v-model="form.estado" class="input">
-              <option value="pendiente">Pendiente</option>
-              <option value="pagada">Pagada</option>
-            </select>
-          </div>
-        </div>
-      </AppCard>
-
-      <!-- Items de la Factura -->
-      <AppCard title="Items de la Factura">
-        <div class="space-y-4">
-          <div
-            v-for="(item, index) in form.items"
-            :key="index"
-            class="p-4 bg-gray-50 rounded-lg border border-gray-200"
-          >
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-              <div class="md:col-span-5">
-                <label class="label text-xs">Producto *</label>
-                <select
-                  v-model="item.productoId"
-                  @change="updateItemFromProduct(index)"
-                  class="input"
-                  required
-                >
-                  <option value="">Seleccione producto</option>
-                  <option v-for="product in products" :key="product._id" :value="product._id">
-                    {{ product.nombre }} - {{ formatCurrency(product.precio) }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="md:col-span-2">
-                <label class="label text-xs">Cantidad *</label>
-                <input
-                  v-model.number="item.cantidad"
-                  type="number"
-                  min="1"
-                  class="input"
-                  required
-                  @input="calculateItemSubtotal(index)"
-                />
-              </div>
-
-              <div class="md:col-span-2">
-                <label class="label text-xs">Precio Unit.</label>
-                <input
-                  v-model.number="item.precioUnitario"
-                  type="number"
-                  step="0.01"
-                  class="input"
-                  required
-                  @input="calculateItemSubtotal(index)"
-                />
-              </div>
-
-              <div class="md:col-span-2">
-                <label class="label text-xs">Subtotal</label>
-                <input
-                  :value="formatCurrency(item.subtotal)"
-                  type="text"
-                  class="input bg-gray-100"
-                  disabled
-                />
-              </div>
-
-              <div class="md:col-span-1 flex items-end">
-                <button
-                  type="button"
-                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  @click="removeItem(index)"
-                >
-                  <TrashIcon class="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <AppButton
-            type="button"
-            variant="outline"
-            :icon-left="PlusIcon"
-            @click="addItem"
-            full-width
-          >
-            Agregar Item
-          </AppButton>
-        </div>
-      </AppCard>
-
-      <!-- Totales y Notas -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2">
-          <AppCard title="Notas Adicionales">
-            <AppInput
-              v-model="form.notas"
-              type="textarea"
-              placeholder="Agregar notas o comentarios..."
-              :rows="6"
-            />
-          </AppCard>
-        </div>
-
-        <div>
-          <AppCard title="Resumen">
-            <div class="space-y-3">
-              <div class="flex justify-between text-gray-700">
-                <span>Subtotal:</span>
-                <span class="font-medium">{{ formatCurrency(totals.subtotal) }}</span>
-              </div>
-              <div class="flex justify-between text-gray-700">
-                <span>IGV (18%):</span>
-                <span class="font-medium">{{ formatCurrency(totals.impuesto) }}</span>
-              </div>
-              <div class="border-t border-gray-200 pt-3 mt-3">
-                <div class="flex justify-between text-lg font-bold text-gray-900">
-                  <span>Total:</span>
-                  <span>{{ formatCurrency(totals.total) }}</span>
+            <div v-if="selectedCustomer" class="p-4 bg-gray-50 rounded-lg">
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p class="text-gray-600">Tipo Documento:</p>
+                  <p class="font-medium">{{ selectedCustomer.tipoDocumento }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-600">Número:</p>
+                  <p class="font-medium">{{ selectedCustomer.numeroDocumento }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-600">Email:</p>
+                  <p class="font-medium">{{ selectedCustomer.email || 'N/A' }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-600">Teléfono:</p>
+                  <p class="font-medium">{{ selectedCustomer.telefono || 'N/A' }}</p>
                 </div>
               </div>
             </div>
-          </AppCard>
-        </div>
+          </div>
+        </AppCard>
+
+        <!-- Productos -->
+        <AppCard title="Productos">
+          <div class="space-y-4">
+            <!-- Botón Agregar Producto -->
+            <AppButton
+              variant="secondary"
+              :icon-left="PlusIcon"
+              @click="showProductSelector = true"
+              class="w-full"
+            >
+              Agregar Producto
+            </AppButton>
+
+            <!-- Lista de Productos Seleccionados -->
+            <div v-if="invoiceItems.length === 0" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+              <CubeIcon class="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <p class="text-gray-500">No hay productos agregados</p>
+            </div>
+
+            <div v-else class="space-y-3">
+              <div
+                v-for="(item, index) in invoiceItems"
+                :key="index"
+                class="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-3 flex-1">
+                    <div class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <CubeIcon class="h-6 w-6 text-gray-400" />
+                    </div>
+                    <div class="flex-1">
+                      <p class="font-medium text-gray-900">{{ item.nombre }}</p>
+                      <p class="text-sm text-gray-500">{{ item.codigo }}</p>
+                    </div>
+                  </div>
+                  <button
+                    @click="removeItem(index)"
+                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <TrashIcon class="h-5 w-5" />
+                  </button>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-xs text-gray-600 mb-1">Cantidad</label>
+                    <input
+                      v-model.number="item.cantidad"
+                      type="number"
+                      min="1"
+                      :max="item.stockDisponible"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                      @input="updateItemSubtotal(index)"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">Stock: {{ item.stockDisponible }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600 mb-1">Precio Unit.</label>
+                    <input
+                      v-model.number="item.precioUnitario"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                      @input="updateItemSubtotal(index)"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600 mb-1">Subtotal</label>
+                    <input
+                      :value="formatCurrency(item.subtotal)"
+                      type="text"
+                      readonly
+                      class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </AppCard>
+
+        <!-- Notas -->
+        <AppCard title="Notas (Opcional)">
+          <textarea
+            v-model="notas"
+            rows="3"
+            placeholder="Agregue notas adicionales para esta factura..."
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
+          />
+        </AppCard>
       </div>
 
-      <!-- Actions -->
-      <div class="flex items-center justify-end gap-3">
-        <AppButton type="button" variant="secondary" @click="router.push('/facturas')">
-          Cancelar
-        </AppButton>
-        <AppButton type="submit" variant="primary" :loading="loading">
-          Guardar Factura
-        </AppButton>
-      </div>
-    </form>
+      <!-- Resumen -->
+      <div class="lg:col-span-1">
+        <AppCard title="Resumen" class="sticky top-6">
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-medium">{{ formatCurrency(subtotal) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">IGV (18%):</span>
+                <span class="font-medium">{{ formatCurrency(igv) }}</span>
+              </div>
+              <div class="pt-2 border-t border-gray-200">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-900">Total:</span>
+                  <span class="text-2xl font-bold text-primary-600">
+                    {{ formatCurrency(total) }}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-    <!-- Modal de Nuevo Cliente -->
+            <div class="pt-4 border-t border-gray-200 space-y-2 text-sm text-gray-600">
+              <div class="flex justify-between">
+                <span>Productos:</span>
+                <span class="font-medium">{{ invoiceItems.length }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Cantidad Total:</span>
+                <span class="font-medium">{{ totalQuantity }}</span>
+              </div>
+            </div>
+
+            <AppButton
+              variant="primary"
+              class="w-full"
+              :disabled="!canCreateInvoice || loading"
+              :loading="loading"
+              @click="createInvoice"
+            >
+              Generar Factura
+            </AppButton>
+          </div>
+        </AppCard>
+      </div>
+    </div>
+
+    <!-- Modal Selector de Productos -->
     <AppModal
-      v-model:show="showCustomerModal"
-      title="Nuevo Cliente"
-      subtitle="Registre un nuevo cliente"
+      v-model:show="showProductSelector"
+      title="Seleccionar Producto"
+      subtitle="Elija un producto para agregar a la factura"
       size="lg"
     >
-      <CustomerForm
-        @submit="handleCustomerSubmit"
-        @cancel="showCustomerModal = false"
-      />
+      <ProductSelector @select="addProduct" />
     </AppModal>
   </div>
 </template>
@@ -210,142 +216,146 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useInvoicesStore } from '@/stores/invoices'
-import { useCustomersStore } from '@/stores/customers'
-//import { useProductsStore } from '@/stores/products'
+import api from '@/services/api'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
-import AppInput from '@/components/common/AppInput.vue'
 import AppModal from '@/components/common/AppModal.vue'
-import CustomerForm from '@/components/customers/CustomerForm.vue'
-import {
-  ArrowLeftIcon,
-  PlusIcon,
-  TrashIcon
-} from '@heroicons/vue/24/outline'
+import ProductSelector from '@/components/common/ProductSelector.vue'
+import { PlusIcon, CubeIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-const invoicesStore = useInvoicesStore()
-const customersStore = useCustomersStore()
-//const productsStore = useProductsStore()
 
+const customers = ref([])
+const selectedCustomerId = ref('')
+const invoiceItems = ref([])
+const notas = ref('')
+const showProductSelector = ref(false)
 const loading = ref(false)
-const showCustomerModal = ref(false)
 
-const form = ref({
-  clienteId: '',
-  fechaEmision: new Date().toISOString().split('T')[0],
-  fechaVencimiento: '',
-  metodoPago: '',
-  estado: 'pendiente',
-  items: [
-    {
-      productoId: '',
-      cantidad: 1,
-      precioUnitario: 0,
-      descuento: 0,
-      subtotal: 0
-    }
-  ],
-  notas: ''
+const selectedCustomer = computed(() => {
+  return customers.value.find(c => c._id === selectedCustomerId.value)
 })
 
-// Datos de ejemplo
-const customers = ref([
-  { _id: '1', nombre: 'Juan Pérez', numeroDocumento: '12345678' },
-  { _id: '2', nombre: 'María García', numeroDocumento: '87654321' }
-])
+const subtotal = computed(() => {
+  return invoiceItems.value.reduce((sum, item) => sum + item.subtotal, 0)
+})
 
-const products = ref([
-  { _id: '1', nombre: 'Laptop Dell XPS 15', precio: 1500.00, stock: 25 },
-  { _id: '2', nombre: 'Mouse Logitech MX', precio: 100.00, stock: 50 },
-  { _id: '3', nombre: 'Teclado Mecánico', precio: 150.00, stock: 30 }
-])
+const igv = computed(() => {
+  return subtotal.value * 0.18
+})
 
-const totals = computed(() => {
-  const subtotal = form.value.items.reduce((sum, item) => sum + item.subtotal, 0)
-  const impuesto = subtotal * 0.18
-  const total = subtotal + impuesto
+const total = computed(() => {
+  return subtotal.value + igv.value
+})
 
-  return {
-    subtotal,
-    impuesto,
-    total
-  }
+const totalQuantity = computed(() => {
+  return invoiceItems.value.reduce((sum, item) => sum + item.cantidad, 0)
+})
+
+const canCreateInvoice = computed(() => {
+  return selectedCustomerId.value && invoiceItems.value.length > 0
 })
 
 const formatCurrency = (value) => {
+  if (!value && value !== 0) return 'S/. 0.00'
   return new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'PEN'
   }).format(value)
 }
 
-const addItem = () => {
-  form.value.items.push({
-    productoId: '',
-    cantidad: 1,
-    precioUnitario: 0,
-    descuento: 0,
-    subtotal: 0
-  })
+const loadCustomers = async () => {
+  try {
+    const response = await api.get('/customers?activo=true')
+    customers.value = response.data || []
+  } catch (error) {
+    console.error('Error al cargar clientes:', error)
+  }
+}
+
+const addProduct = (product) => {
+  // Verificar si el producto ya está en la lista
+  const existingItem = invoiceItems.value.find(item => item.producto === product._id)
+
+  if (existingItem) {
+    if (existingItem.cantidad < product.stock) {
+      existingItem.cantidad++
+      updateItemSubtotal(invoiceItems.value.indexOf(existingItem))
+    } else {
+      alert('No hay más stock disponible para este producto')
+    }
+  } else {
+    invoiceItems.value.push({
+      producto: product._id,
+      codigo: product.codigo,
+      nombre: product.nombre,
+      cantidad: 1,
+      precioUnitario: product.precio,
+      subtotal: product.precio,
+      stockDisponible: product.stock
+    })
+  }
+
+  showProductSelector.value = false
 }
 
 const removeItem = (index) => {
-  if (form.value.items.length > 1) {
-    form.value.items.splice(index, 1)
+  invoiceItems.value.splice(index, 1)
+}
+
+const updateItemSubtotal = (index) => {
+  const item = invoiceItems.value[index]
+  item.subtotal = item.cantidad * item.precioUnitario
+}
+
+const createInvoice = async () => {
+  if (!canCreateInvoice.value) {
+    alert('Por favor complete todos los campos requeridos')
+    return
   }
-}
 
-const updateItemFromProduct = (index) => {
-  const item = form.value.items[index]
-  const product = products.value.find(p => p._id === item.productoId)
-
-  if (product) {
-    item.precioUnitario = product.precio
-    calculateItemSubtotal(index)
-  }
-}
-
-const calculateItemSubtotal = (index) => {
-  const item = form.value.items[index]
-  item.subtotal = item.cantidad * item.precioUnitario * (1 - item.descuento / 100)
-}
-
-const handleSubmit = async () => {
-  loading.value = true
   try {
+    loading.value = true
+
     const invoiceData = {
-      ...form.value,
-      subtotal: totals.value.subtotal,
-      impuesto: 18,
-      montoImpuesto: totals.value.impuesto,
-      total: totals.value.total
+      cliente: selectedCustomerId.value,
+      items: invoiceItems.value.map(item => ({
+        producto: item.producto,
+        cantidad: item.cantidad
+      })),
+      notas: notas.value
     }
 
-    await invoicesStore.createInvoice(invoiceData)
+    await api.post('/invoices', invoiceData)
+
+    alert('Factura creada exitosamente')
     router.push('/facturas')
   } catch (error) {
     console.error('Error al crear factura:', error)
+    alert(error.mensaje || 'Error al crear la factura')
   } finally {
     loading.value = false
   }
 }
 
-const handleCustomerSubmit = async (customerData) => {
-  try {
-    const newCustomer = await customersStore.createCustomer(customerData)
-    customers.value.push(newCustomer)
-    form.value.clienteId = newCustomer._id
-    showCustomerModal.value = false
-  } catch (error) {
-    console.error('Error:', error)
-  }
-}
-
 onMounted(() => {
-  // Cargar datos
-  // customersStore.fetchCustomers()
-  // productsStore.fetchProducts()
+  loadCustomers()
 })
 </script>
+
+<style scoped>
+.animation-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

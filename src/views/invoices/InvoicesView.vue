@@ -94,73 +94,82 @@
 
     <!-- Invoices Table -->
     <AppCard title="Lista de Facturas">
-      <div v-if="filteredInvoices.length === 0" class="text-center py-12">
+      <div v-if="loading" class="text-center py-12">
+        <p class="text-gray-500">Cargando facturas...</p>
+      </div>
+      <div v-else-if="filteredInvoices.length === 0" class="text-center py-12">
+        <DocumentTextIcon class="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <p class="text-gray-500">No hay facturas disponibles</p>
       </div>
-      <AppTable
-        v-else
-        :columns="columns"
-        :data="filteredInvoices"
-        empty-message="No hay facturas disponibles"
-      >
-        <template #cell-numeroFactura="{ value, item }">
-          <button
-            @click="router.push(`/facturas/${item._id}`)"
-            class="font-mono font-medium text-primary-600 hover:text-primary-700 hover:underline"
-          >
-            {{ value }}
-          </button>
-        </template>
-
-        <template #cell-cliente="{ item }">
-          <div>
-            <p class="font-medium text-gray-900">{{ item.cliente?.nombre || 'N/A' }}</p>
-            <p class="text-sm text-gray-500">{{ item.cliente?.numeroDocumento || 'N/A' }}</p>
-          </div>
-        </template>
-
-        <template #cell-fecha="{ value }">
-          <span class="text-sm text-gray-700">{{ formatDate(value) }}</span>
-        </template>
-
-        <template #cell-total="{ value }">
-          <span class="font-semibold text-gray-900">{{ formatCurrency(value) }}</span>
-        </template>
-
-        <template #cell-estado="{ value }">
-          <AppBadge :variant="getStatusVariant(value)">
-            {{ getStatusLabel(value) }}
-          </AppBadge>
-        </template>
-
-        <template #actions="{ item }">
-          <div class="flex items-center gap-2">
-            <button
-              class="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-              @click="router.push(`/facturas/${item._id}`)"
-              title="Ver detalles"
+      <div v-else class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Factura</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              v-for="invoice in filteredInvoices"
+              :key="invoice._id"
+              class="hover:bg-gray-50 transition-colors"
             >
-              <EyeIcon class="h-5 w-5" />
-            </button>
-            <button
-              v-if="item.estado !== 'anulada'"
-              class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              @click="downloadInvoice(item)"
-              title="Descargar PDF"
-            >
-              <ArrowDownTrayIcon class="h-5 w-5" />
-            </button>
-            <button
-              v-if="item.estado === 'pendiente'"
-              class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              @click="confirmCancel(item)"
-              title="Anular factura"
-            >
-              <XCircleIcon class="h-5 w-5" />
-            </button>
-          </div>
-        </template>
-      </AppTable>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-mono font-medium text-primary-600">{{ invoice.numeroFactura }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>
+                  <p class="font-medium text-gray-900">{{ invoice.cliente?.nombre || 'N/A' }}</p>
+                  <p class="text-sm text-gray-500">{{ invoice.cliente?.numeroDocumento || 'N/A' }}</p>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-700">{{ formatDate(invoice.fechaEmision) }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-semibold text-gray-900">{{ formatCurrency(invoice.total) }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <AppBadge :variant="getStatusVariant(invoice.estado)">
+                  {{ getStatusLabel(invoice.estado) }}
+                </AppBadge>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    class="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    @click="viewInvoice(invoice)"
+                    title="Ver detalles"
+                  >
+                    <EyeIcon class="h-5 w-5" />
+                  </button>
+                  <button
+                    v-if="invoice.estado === 'pendiente'"
+                    class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    @click="markAsPaid(invoice)"
+                    title="Marcar como pagada"
+                  >
+                    <CheckCircleIcon class="h-5 w-5" />
+                  </button>
+                  <button
+                    v-if="invoice.estado === 'pendiente'"
+                    class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    @click="cancelInvoice(invoice)"
+                    title="Anular factura"
+                  >
+                    <XCircleIcon class="h-5 w-5" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </AppCard>
   </div>
 </template>
@@ -168,11 +177,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// import { useInvoicesStore } from '@/stores/invoices'
+import api from '@/services/api'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
-import AppTable from '@/components/common/AppTable.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
 import {
   PlusIcon,
@@ -182,12 +190,12 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   EyeIcon,
-  ArrowDownTrayIcon
+  DocumentTextIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-// const invoicesStore = useInvoicesStore()
 
+const loading = ref(false)
 const filters = ref({
   search: '',
   estado: '',
@@ -195,60 +203,13 @@ const filters = ref({
   fechaFin: ''
 })
 
+const invoices = ref([])
 const stats = ref({
-  totalFacturado: 125480.50,
-  pendientes: 12,
-  pagadas: 45,
-  anuladas: 3
+  totalFacturado: 0,
+  pendientes: 0,
+  pagadas: 0,
+  anuladas: 0
 })
-
-const columns = [
-  { key: 'numeroFactura', label: 'N° Factura' },
-  { key: 'cliente', label: 'Cliente' },
-  { key: 'fecha', label: 'Fecha' },
-  { key: 'total', label: 'Total' },
-  { key: 'estado', label: 'Estado' }
-]
-
-// Datos de ejemplo
-const invoices = ref([
-  {
-    _id: '1',
-    numeroFactura: 'FAC-000123',
-    cliente: {
-      nombre: 'Juan Pérez',
-      numeroDocumento: '12345678'
-    },
-    fecha: '2025-10-20',
-    subtotal: 1000.00,
-    total: 1180.00,
-    estado: 'pagada'
-  },
-  {
-    _id: '2',
-    numeroFactura: 'FAC-000122',
-    cliente: {
-      nombre: 'María García',
-      numeroDocumento: '87654321'
-    },
-    fecha: '2025-10-18',
-    subtotal: 750.00,
-    total: 885.00,
-    estado: 'pendiente'
-  },
-  {
-    _id: '3',
-    numeroFactura: 'FAC-000121',
-    cliente: {
-      nombre: 'Carlos López',
-      numeroDocumento: '11223344'
-    },
-    fecha: '2025-10-15',
-    subtotal: 1500.00,
-    total: 1770.00,
-    estado: 'pagada'
-  }
-])
 
 const filteredInvoices = computed(() => {
   let result = [...invoices.value]
@@ -292,7 +253,6 @@ const formatDate = (dateString) => {
 }
 
 const getStatusVariant = (status) => {
-  if (!status) return 'gray'
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
@@ -302,7 +262,6 @@ const getStatusVariant = (status) => {
 }
 
 const getStatusLabel = (status) => {
-  if (!status) return 'N/A'
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
@@ -311,30 +270,66 @@ const getStatusLabel = (status) => {
   return labels[status] || status
 }
 
-const downloadInvoice = (invoice) => {
-  if (!invoice) return
-  console.log('Descargando factura:', invoice.numeroFactura)
-  alert(`Descargando factura: ${invoice.numeroFactura}`)
+const loadInvoices = async () => {
+  try {
+    loading.value = true
+    const response = await api.get('/invoices')
+    invoices.value = response.data || []
+    await loadStats()
+  } catch (error) {
+    console.error('Error al cargar facturas:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
-const confirmCancel = async (invoice) => {
-  if (!invoice) return
+const loadStats = async () => {
+  try {
+    const response = await api.get('/invoices/stats')
+    const data = response.data || {}
+    stats.value = {
+      totalFacturado: data.totalSales || 0,
+      pendientes: data.pendingInvoices || 0,
+      pagadas: data.paidInvoices || 0,
+      anuladas: data.canceledInvoices || 0
+    }
+  } catch (error) {
+    console.error('Error al cargar estadísticas:', error)
+  }
+}
+
+const viewInvoice = (invoice) => {
+  router.push(`/facturas/${invoice._id}`)
+}
+
+const markAsPaid = async (invoice) => {
+  if (confirm(`¿Marcar la factura ${invoice.numeroFactura} como pagada?`)) {
+    try {
+      await api.put(`/invoices/${invoice._id}/status`, { estado: 'pagada' })
+      await loadInvoices()
+      alert('Factura marcada como pagada')
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al actualizar la factura')
+    }
+  }
+}
+
+const cancelInvoice = async (invoice) => {
   if (confirm(`¿Está seguro de anular la factura ${invoice.numeroFactura}?`)) {
     try {
-      console.log('Anulando factura:', invoice)
-      invoice.estado = 'anulada'
+      await api.put(`/invoices/${invoice._id}/status`, { estado: 'anulada' })
+      await loadInvoices()
       alert('Factura anulada correctamente')
-    } catch (err) {
-      console.error('Error al anular factura:', err)
+    } catch (error) {
+      console.error('Error:', error)
       alert('Error al anular la factura')
     }
   }
 }
 
 onMounted(() => {
-  // invoicesStore.fetchInvoices()
-  console.log('InvoicesView montado correctamente')
-  console.log('Facturas cargadas:', invoices.value.length)
+  loadInvoices()
 })
 </script>
 

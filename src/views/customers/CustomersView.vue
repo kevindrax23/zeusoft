@@ -59,7 +59,10 @@
           :icon-left="MagnifyingGlassIcon"
         />
 
-        <select v-model="filters.tipoDocumento" class="input">
+        <select
+          v-model="filters.tipoDocumento"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
+        >
           <option value="">Todos los documentos</option>
           <option value="DNI">DNI</option>
           <option value="RUC">RUC</option>
@@ -67,7 +70,10 @@
           <option value="PASAPORTE">Pasaporte</option>
         </select>
 
-        <select v-model="filters.activo" class="input">
+        <select
+          v-model="filters.activo"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition bg-white"
+        >
           <option value="">Todos los estados</option>
           <option value="true">Activos</option>
           <option value="false">Inactivos</option>
@@ -77,7 +83,12 @@
 
     <!-- Customers Table -->
     <AppCard title="Lista de Clientes">
+      <div v-if="filteredCustomers.length === 0" class="text-center py-12">
+        <UsersIcon class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-gray-500">No hay clientes registrados</p>
+      </div>
       <AppTable
+        v-else
         :columns="columns"
         :data="filteredCustomers"
         empty-message="No hay clientes registrados"
@@ -89,7 +100,7 @@
             </div>
             <div>
               <p class="font-medium text-gray-900">{{ item.nombre }}</p>
-              <p class="text-sm text-gray-500">{{ item.email }}</p>
+              <p class="text-sm text-gray-500">{{ item.email || 'Sin email' }}</p>
             </div>
           </div>
         </template>
@@ -164,7 +175,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCustomersStore } from '@/stores/customers'
+import api from '@/services/api'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
@@ -184,21 +195,21 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-const customersStore = useCustomersStore()
 
 const showModal = ref(false)
 const editingCustomer = ref(null)
+const loading = ref(false)
 const filters = ref({
   search: '',
   tipoDocumento: '',
   activo: ''
 })
 
-const stats = ref({
-  total: 89,
-  activos: 82,
+const stats = computed(() => ({
+  total: customers.value.length,
+  activos: customers.value.filter(c => c.activo).length,
   nuevosMes: 8
-})
+}))
 
 const columns = [
   { key: 'nombre', label: 'Cliente' },
@@ -208,57 +219,26 @@ const columns = [
   { key: 'activo', label: 'Estado' }
 ]
 
-// Datos de ejemplo
-const customers = ref([
-  {
-    _id: '1',
-    nombre: 'Juan Pérez García',
-    email: 'juan@email.com',
-    tipoDocumento: 'DNI',
-    numeroDocumento: '12345678',
-    telefono: '987654321',
-    direccion: { ciudad: 'Lima', codigoPostal: '15001' },
-    activo: true
-  },
-  {
-    _id: '2',
-    nombre: 'María García López',
-    email: 'maria@email.com',
-    tipoDocumento: 'DNI',
-    numeroDocumento: '87654321',
-    telefono: '912345678',
-    direccion: { ciudad: 'Arequipa', codigoPostal: '04001' },
-    activo: true
-  },
-  {
-    _id: '3',
-    nombre: 'Empresa SAC',
-    email: 'contacto@empresa.com',
-    tipoDocumento: 'RUC',
-    numeroDocumento: '20123456789',
-    telefono: '014567890',
-    direccion: { ciudad: 'Lima', codigoPostal: '15002' },
-    activo: true
-  }
-])
+const customers = ref([])
 
 const filteredCustomers = computed(() => {
-  let result = customers.value
+  let result = [...customers.value]
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    result = result.filter(c =>
-      c.nombre.toLowerCase().includes(search) ||
-      c.numeroDocumento.includes(search) ||
-      c.email?.toLowerCase().includes(search)
-    )
+    result = result.filter(c => {
+      const matchesName = c.nombre?.toLowerCase().includes(search)
+      const matchesDoc = c.numeroDocumento?.includes(search)
+      const matchesEmail = c.email?.toLowerCase().includes(search)
+      return matchesName || matchesDoc || matchesEmail
+    })
   }
 
   if (filters.value.tipoDocumento) {
     result = result.filter(c => c.tipoDocumento === filters.value.tipoDocumento)
   }
 
-  if (filters.value.activo) {
+  if (filters.value.activo !== '') {
     const activo = filters.value.activo === 'true'
     result = result.filter(c => c.activo === activo)
   }
@@ -267,7 +247,22 @@ const filteredCustomers = computed(() => {
 })
 
 const getInitials = (name) => {
+  if (!name) return '?'
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
+
+const loadCustomers = async () => {
+  try {
+    loading.value = true
+    const response = await api.get('/customers')
+    customers.value = response.data || []
+    console.log('Clientes cargados:', customers.value.length)
+  } catch (error) {
+    console.error('Error al cargar clientes:', error)
+    customers.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 const editCustomer = (customer) => {
@@ -276,25 +271,46 @@ const editCustomer = (customer) => {
 }
 
 const confirmDelete = async (customer) => {
+  if (!customer || !customer._id) return
+
   if (confirm(`¿Está seguro de eliminar el cliente ${customer.nombre}?`)) {
     try {
-      await customersStore.deleteCustomer(customer._id)
+      await api.delete(`/customers/${customer._id}`)
+      customers.value = customers.value.filter(c => c._id !== customer._id)
+      alert('Cliente eliminado correctamente')
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error al eliminar:', error)
+      alert('Error al eliminar el cliente')
     }
   }
 }
 
 const handleSubmit = async (customerData) => {
   try {
+    loading.value = true
+
     if (editingCustomer.value) {
-      await customersStore.updateCustomer(editingCustomer.value._id, customerData)
+      // Actualizar cliente
+      const response = await api.put(`/customers/${editingCustomer.value._id}`, customerData)
+      const index = customers.value.findIndex(c => c._id === editingCustomer.value._id)
+      if (index !== -1) {
+        customers.value[index] = response.data
+      }
+      alert('Cliente actualizado correctamente')
     } else {
-      await customersStore.createCustomer(customerData)
+      // Crear nuevo cliente
+      const response = await api.post('/customers', customerData)
+      customers.value.unshift(response.data)
+      alert('Cliente creado correctamente')
     }
+
     closeModal()
+    await loadCustomers()
   } catch (error) {
     console.error('Error:', error)
+    alert(error.mensaje || 'Error al guardar el cliente')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -304,6 +320,24 @@ const closeModal = () => {
 }
 
 onMounted(() => {
-  // customersStore.fetchCustomers()
+  loadCustomers()
+  console.log('CustomersView montado correctamente')
 })
 </script>
+
+<style scoped>
+.animation-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

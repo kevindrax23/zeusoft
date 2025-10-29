@@ -54,7 +54,7 @@
             <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(stats.totalSales) }}</p>
             <p class="text-xs text-green-600 mt-1 flex items-center">
               <ArrowTrendingUpIcon class="h-3 w-3 mr-1" />
-              +12.5% vs mes anterior
+              Total facturado
             </p>
           </div>
           <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -70,7 +70,7 @@
             <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.totalInvoices }}</p>
             <p class="text-xs text-blue-600 mt-1 flex items-center">
               <DocumentTextIcon class="h-3 w-3 mr-1" />
-              {{ stats.invoicesPaid }} pagadas
+              {{ stats.paidInvoices }} pagadas
             </p>
           </div>
           <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -98,11 +98,11 @@
       <AppCard padding="normal">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">Clientes Nuevos</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.newCustomers }}</p>
+            <p class="text-sm text-gray-600">Clientes Activos</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.totalCustomers }}</p>
             <p class="text-xs text-orange-600 mt-1 flex items-center">
               <UsersIcon class="h-3 w-3 mr-1" />
-              Total: {{ stats.totalCustomers }}
+              Con compras
             </p>
           </div>
           <div class="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -120,7 +120,7 @@
           <div class="text-center">
             <ChartBarIcon class="h-16 w-16 text-gray-400 mx-auto mb-2" />
             <p class="text-gray-500">Gráfico de ventas</p>
-            <p class="text-sm text-gray-400">Implementar con Chart.js o similar</p>
+            <p class="text-sm text-gray-400">Implementar con Chart.js</p>
           </div>
         </div>
       </AppCard>
@@ -131,7 +131,7 @@
           <div class="text-center">
             <ChartPieIcon class="h-16 w-16 text-gray-400 mx-auto mb-2" />
             <p class="text-gray-500">Gráfico de productos</p>
-            <p class="text-sm text-gray-400">Implementar con Chart.js o similar</p>
+            <p class="text-sm text-gray-400">Implementar con Chart.js</p>
           </div>
         </div>
       </AppCard>
@@ -139,7 +139,10 @@
 
     <!-- Top Products Table -->
     <AppCard title="Productos Más Vendidos">
-      <div class="overflow-x-auto">
+      <div v-if="topProducts.length === 0" class="text-center py-8">
+        <p class="text-gray-500">No hay datos de productos vendidos</p>
+      </div>
+      <div v-else class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -153,7 +156,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr
               v-for="(product, index) in topProducts"
-              :key="product.id"
+              :key="product._id"
               class="hover:bg-gray-50 transition-colors"
             >
               <td class="px-6 py-4 whitespace-nowrap">
@@ -165,21 +168,21 @@
                     <CubeIcon class="h-6 w-6 text-gray-400" />
                   </div>
                   <div class="ml-4">
-                    <p class="font-medium text-gray-900">{{ product.name }}</p>
-                    <p class="text-sm text-gray-500">{{ product.code }}</p>
+                    <p class="font-medium text-gray-900">{{ product.nombre }}</p>
+                    <p class="text-sm text-gray-500">{{ product.codigo }}</p>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 capitalize">
-                  {{ product.category }}
+                  {{ product.categoria }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-semibold text-gray-900">{{ product.units }}</span>
+                <span class="text-sm font-semibold text-gray-900">{{ product.cantidadVendida }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-semibold text-green-600">{{ formatCurrency(product.revenue) }}</span>
+                <span class="text-sm font-semibold text-green-600">{{ formatCurrency(product.ingresos) }}</span>
               </td>
             </tr>
           </tbody>
@@ -189,25 +192,30 @@
 
     <!-- Recent Invoices -->
     <AppCard title="Últimas Facturas" subtitle="Últimas 5 transacciones">
-      <div class="space-y-4">
+      <div v-if="recentInvoices.length === 0" class="text-center py-8">
+        <DocumentTextIcon class="h-12 w-12 text-gray-400 mx-auto mb-2" />
+        <p class="text-gray-500">No hay facturas registradas</p>
+      </div>
+      <div v-else class="space-y-4">
         <div
           v-for="invoice in recentInvoices"
-          :key="invoice.id"
-          class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          :key="invoice._id"
+          class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+          @click="router.push(`/facturas/${invoice._id}`)"
         >
           <div class="flex items-center gap-4">
             <div class="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center">
               <DocumentTextIcon class="h-6 w-6 text-primary-600" />
             </div>
             <div>
-              <p class="font-medium text-gray-900">{{ invoice.number }}</p>
-              <p class="text-sm text-gray-500">{{ invoice.customer }} - {{ formatDate(invoice.date) }}</p>
+              <p class="font-medium text-gray-900">{{ invoice.numeroFactura }}</p>
+              <p class="text-sm text-gray-500">{{ invoice.cliente?.nombre }} - {{ formatDate(invoice.fechaEmision) }}</p>
             </div>
           </div>
           <div class="text-right">
             <p class="font-semibold text-gray-900">{{ formatCurrency(invoice.total) }}</p>
-            <AppBadge :variant="getStatusVariant(invoice.status)" size="sm">
-              {{ getStatusLabel(invoice.status) }}
+            <AppBadge :variant="getStatusVariant(invoice.estado)" size="sm">
+              {{ getStatusLabel(invoice.estado) }}
             </AppBadge>
           </div>
         </div>
@@ -218,6 +226,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '@/services/api'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
@@ -234,6 +244,8 @@ import {
   ArrowTrendingUpIcon
 } from '@heroicons/vue/24/outline'
 
+const router = useRouter()
+
 const selectedPeriod = ref('month')
 const dateRange = ref({
   start: '',
@@ -241,100 +253,16 @@ const dateRange = ref({
 })
 
 const stats = ref({
-  totalSales: 125480.50,
-  totalInvoices: 156,
-  invoicesPaid: 142,
-  productsSold: 1245,
-  uniqueProducts: 67,
-  newCustomers: 23,
-  totalCustomers: 189
+  totalSales: 0,
+  totalInvoices: 0,
+  paidInvoices: 0,
+  productsSold: 0,
+  uniqueProducts: 0,
+  totalCustomers: 0
 })
 
-const topProducts = ref([
-  {
-    id: 1,
-    code: 'PROD-001',
-    name: 'Laptop Dell XPS 15',
-    category: 'electrónica',
-    units: 45,
-    revenue: 67500.00
-  },
-  {
-    id: 2,
-    code: 'PROD-002',
-    name: 'Mouse Logitech MX',
-    category: 'electrónica',
-    units: 120,
-    revenue: 12000.00
-  },
-  {
-    id: 3,
-    code: 'PROD-003',
-    name: 'Teclado Mecánico',
-    category: 'electrónica',
-    units: 89,
-    revenue: 13350.00
-  },
-  {
-    id: 4,
-    code: 'PROD-004',
-    name: 'Monitor Samsung 27"',
-    category: 'electrónica',
-    units: 67,
-    revenue: 40200.00
-  },
-  {
-    id: 5,
-    code: 'PROD-005',
-    name: 'Webcam HD',
-    category: 'electrónica',
-    units: 156,
-    revenue: 23400.00
-  }
-])
-
-const recentInvoices = ref([
-  {
-    id: 1,
-    number: 'FAC-000123',
-    customer: 'Juan Pérez',
-    date: '2025-10-28',
-    total: 1180.00,
-    status: 'pagada'
-  },
-  {
-    id: 2,
-    number: 'FAC-000122',
-    customer: 'María García',
-    date: '2025-10-27',
-    total: 885.00,
-    status: 'pendiente'
-  },
-  {
-    id: 3,
-    number: 'FAC-000121',
-    customer: 'Carlos López',
-    date: '2025-10-26',
-    total: 1770.00,
-    status: 'pagada'
-  },
-  {
-    id: 4,
-    number: 'FAC-000120',
-    customer: 'Ana Torres',
-    date: '2025-10-25',
-    total: 2350.00,
-    status: 'pagada'
-  },
-  {
-    id: 5,
-    number: 'FAC-000119',
-    customer: 'Luis Martínez',
-    date: '2025-10-24',
-    total: 950.00,
-    status: 'pendiente'
-  }
-])
+const topProducts = ref([])
+const recentInvoices = ref([])
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return 'S/. 0.00'
@@ -359,7 +287,6 @@ const formatDate = (dateString) => {
 }
 
 const getStatusVariant = (status) => {
-  if (!status) return 'gray'
   const variants = {
     pagada: 'success',
     pendiente: 'warning',
@@ -369,7 +296,6 @@ const getStatusVariant = (status) => {
 }
 
 const getStatusLabel = (status) => {
-  if (!status) return 'N/A'
   const labels = {
     pagada: 'Pagada',
     pendiente: 'Pendiente',
@@ -378,15 +304,94 @@ const getStatusLabel = (status) => {
   return labels[status] || status
 }
 
+const loadStats = async () => {
+  try {
+    const response = await api.get('/invoices/stats')
+    const data = response.data || {}
+
+    stats.value = {
+      totalSales: data.totalSales || 0,
+      totalInvoices: data.totalInvoices || 0,
+      paidInvoices: data.paidInvoices || 0,
+      productsSold: 0,
+      uniqueProducts: 0,
+      totalCustomers: 0
+    }
+  } catch (error) {
+    console.error('Error al cargar estadísticas:', error)
+  }
+}
+
+const loadRecentInvoices = async () => {
+  try {
+    const response = await api.get('/invoices')
+    const invoices = response.data || []
+
+    // Tomar las últimas 5 facturas
+    recentInvoices.value = invoices.slice(0, 5)
+
+    // Calcular productos vendidos
+    let totalProductsSold = 0
+    const uniqueProductIds = new Set()
+    const productSales = {}
+
+    invoices.forEach(invoice => {
+      if (invoice.estado !== 'anulada') {
+        invoice.items?.forEach(item => {
+          totalProductsSold += item.cantidad
+          uniqueProductIds.add(item.producto?._id || item.producto)
+
+          const productId = item.producto?._id || item.producto
+          if (!productSales[productId]) {
+            productSales[productId] = {
+              _id: productId,
+              nombre: item.nombre,
+              codigo: item.codigo,
+              categoria: item.producto?.categoria || 'otros',
+              cantidadVendida: 0,
+              ingresos: 0
+            }
+          }
+          productSales[productId].cantidadVendida += item.cantidad
+          productSales[productId].ingresos += item.subtotal
+        })
+      }
+    })
+
+    stats.value.productsSold = totalProductsSold
+    stats.value.uniqueProducts = uniqueProductIds.size
+
+    // Top 5 productos más vendidos
+    topProducts.value = Object.values(productSales)
+      .sort((a, b) => b.cantidadVendida - a.cantidadVendida)
+      .slice(0, 5)
+
+  } catch (error) {
+    console.error('Error al cargar facturas recientes:', error)
+  }
+}
+
+const loadCustomers = async () => {
+  try {
+    const response = await api.get('/customers?activo=true')
+    stats.value.totalCustomers = response.data?.length || 0
+  } catch (error) {
+    console.error('Error al cargar clientes:', error)
+  }
+}
+
 const applyFilters = () => {
   console.log('Aplicando filtros:', {
     period: selectedPeriod.value,
     dateRange: dateRange.value
   })
-  // Implementar lógica de filtrado
+  // Implementar lógica de filtrado por fechas
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadStats()
+  await loadRecentInvoices()
+  await loadCustomers()
   console.log('ReportsView montado correctamente')
 })
 </script>

@@ -100,7 +100,15 @@
 
     <!-- Products Table -->
     <AppCard title="Lista de Productos">
+      <div v-if="loading" class="text-center py-12">
+        <p class="text-gray-500">Cargando productos...</p>
+      </div>
+      <div v-else-if="filteredProducts.length === 0" class="text-center py-12">
+        <CubeIcon class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-gray-500">No hay productos disponibles</p>
+      </div>
       <AppTable
+        v-else
         :columns="columns"
         :data="filteredProducts"
         empty-message="No hay productos disponibles"
@@ -179,7 +187,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-// import { useProductsStore } from '@/stores/products'
+import api from '@/services/api'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppInput from '@/components/common/AppInput.vue'
@@ -199,10 +207,9 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 
-// const productsStore = useProductsStore()
-
 const showModal = ref(false)
 const editingProduct = ref(null)
+const loading = ref(false)
 const filters = ref({
   search: '',
   categoria: '',
@@ -217,86 +224,25 @@ const columns = [
   { key: 'activo', label: 'Estado' }
 ]
 
-// Datos de ejemplo
-const products = ref([
-  {
-    _id: '1',
-    codigo: 'PROD-001',
-    nombre: 'Laptop Dell XPS 15',
-    categoria: 'electronica',
-    descripcion: 'Laptop de alto rendimiento',
-    precio: 1500.00,
-    costo: 1200.00,
-    stock: 25,
-    stockMinimo: 10,
-    activo: true
-  },
-  {
-    _id: '2',
-    codigo: 'PROD-002',
-    nombre: 'Mouse Logitech MX Master',
-    categoria: 'electronica',
-    descripcion: 'Mouse inalámbrico profesional',
-    precio: 100.00,
-    costo: 75.00,
-    stock: 5,
-    stockMinimo: 20,
-    activo: true
-  },
-  {
-    _id: '3',
-    codigo: 'PROD-003',
-    nombre: 'Teclado Mecánico RGB',
-    categoria: 'electronica',
-    descripcion: 'Teclado gaming mecánico',
-    precio: 150.00,
-    costo: 100.00,
-    stock: 45,
-    stockMinimo: 15,
-    activo: true
-  },
-  {
-    _id: '4',
-    codigo: 'PROD-004',
-    nombre: 'Monitor Samsung 27"',
-    categoria: 'electronica',
-    descripcion: 'Monitor 4K UHD',
-    precio: 600.00,
-    costo: 450.00,
-    stock: 15,
-    stockMinimo: 8,
-    activo: true
-  },
-  {
-    _id: '5',
-    codigo: 'PROD-005',
-    nombre: 'Webcam Logitech C920',
-    categoria: 'electronica',
-    descripcion: 'Cámara HD 1080p',
-    precio: 150.00,
-    costo: 100.00,
-    stock: 8,
-    stockMinimo: 15,
-    activo: false
-  }
-])
+const products = ref([])
 
 const filteredProducts = computed(() => {
-  let result = products.value
+  let result = [...products.value]
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    result = result.filter(p =>
-      p.nombre.toLowerCase().includes(search) ||
-      p.codigo.toLowerCase().includes(search)
-    )
+    result = result.filter(p => {
+      const matchesName = p.nombre?.toLowerCase().includes(search)
+      const matchesCode = p.codigo?.toLowerCase().includes(search)
+      return matchesName || matchesCode
+    })
   }
 
   if (filters.value.categoria) {
     result = result.filter(p => p.categoria === filters.value.categoria)
   }
 
-  if (filters.value.estado) {
+  if (filters.value.estado !== '') {
     const activo = filters.value.estado === 'true'
     result = result.filter(p => p.activo === activo)
   }
@@ -305,7 +251,7 @@ const filteredProducts = computed(() => {
 })
 
 const totalStock = computed(() => {
-  return products.value.reduce((sum, p) => sum + p.stock, 0)
+  return products.value.reduce((sum, p) => sum + (p.stock || 0), 0)
 })
 
 const activeProducts = computed(() => {
@@ -325,49 +271,74 @@ const formatCurrency = (value) => {
 }
 
 const getStockClass = (item) => {
+  if (!item) return 'font-semibold text-gray-900'
   if (item.stock <= item.stockMinimo) {
     return 'font-semibold text-red-600'
   }
   return 'font-semibold text-gray-900'
 }
 
+const loadProducts = async () => {
+  try {
+    loading.value = true
+    const response = await api.get('/products')
+    products.value = response.data || []
+    console.log('Productos cargados:', products.value.length)
+  } catch (error) {
+    console.error('Error al cargar productos:', error)
+    products.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 const editProduct = (product) => {
+  if (!product) return
   editingProduct.value = { ...product }
   showModal.value = true
 }
 
-const confirmDelete = (product) => {
+const confirmDelete = async (product) => {
+  if (!product || !product._id) return
+
   if (confirm(`¿Está seguro de eliminar el producto ${product.nombre}?`)) {
-    const index = products.value.findIndex(p => p._id === product._id)
-    if (index !== -1) {
-      products.value.splice(index, 1)
+    try {
+      await api.delete(`/products/${product._id}`)
+      products.value = products.value.filter(p => p._id !== product._id)
       alert('Producto eliminado correctamente')
+    } catch (error) {
+      console.error('Error al eliminar:', error)
+      alert('Error al eliminar el producto')
     }
   }
 }
 
 const handleSubmit = async (productData) => {
   try {
-    if (editingProduct.value) {
+    loading.value = true
+
+    if (editingProduct.value && editingProduct.value._id) {
       // Actualizar producto
+      const response = await api.put(`/products/${editingProduct.value._id}`, productData)
       const index = products.value.findIndex(p => p._id === editingProduct.value._id)
       if (index !== -1) {
-        products.value[index] = { ...products.value[index], ...productData }
-        alert('Producto actualizado correctamente')
+        products.value[index] = response.data
       }
+      alert('Producto actualizado correctamente')
     } else {
       // Crear nuevo producto
-      const newProduct = {
-        _id: Date.now().toString(),
-        ...productData
-      }
-      products.value.push(newProduct)
+      const response = await api.post('/products', productData)
+      products.value.unshift(response.data)
       alert('Producto creado correctamente')
     }
+
     closeModal()
+    await loadProducts()
   } catch (error) {
     console.error('Error:', error)
-    alert('Error al guardar el producto')
+    alert(error.mensaje || 'Error al guardar el producto')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -377,12 +348,11 @@ const closeModal = () => {
 }
 
 const applyFilters = () => {
-  // Los filtros ya se aplican reactivamente
   console.log('Aplicando filtros:', filters.value)
 }
 
 onMounted(() => {
-  // productsStore.fetchProducts()
+  loadProducts()
   console.log('ProductsView montado correctamente')
 })
 </script>
