@@ -15,10 +15,22 @@
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <AppButton variant="secondary" :icon-left="PrinterIcon">
+        <AppButton
+          variant="secondary"
+          :icon-left="PrinterIcon"
+          :loading="printing"
+          :disabled="printing || downloadingPDF || !invoice"
+          @click="handlePrint"
+        >
           Imprimir
         </AppButton>
-        <AppButton variant="primary" :icon-left="ArrowDownTrayIcon">
+        <AppButton
+          variant="primary"
+          :icon-left="ArrowDownTrayIcon"
+          :loading="downloadingPDF"
+          :disabled="printing || downloadingPDF || !invoice"
+          @click="handleDownloadPDF"
+        >
           Descargar PDF
         </AppButton>
       </div>
@@ -219,6 +231,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
+import { downloadInvoicePDF, printInvoice } from '@/utils/pdfGenerator'
 import AppCard from '@/components/common/AppCard.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppBadge from '@/components/common/AppBadge.vue'
@@ -237,6 +250,8 @@ const route = useRoute()
 
 const invoice = ref(null)
 const loading = ref(false)
+const downloadingPDF = ref(false)
+const printing = ref(false)
 
 const totalProductos = computed(() => {
   return invoice.value?.items?.length || 0
@@ -316,6 +331,34 @@ const loadInvoice = async () => {
   }
 }
 
+const handlePrint = async () => {
+  if (!invoice.value) return
+
+  try {
+    printing.value = true
+    await printInvoice(invoice.value)
+  } catch (error) {
+    console.error('Error al imprimir:', error)
+    alert('Error al imprimir la factura. Por favor, intente nuevamente.')
+  } finally {
+    printing.value = false
+  }
+}
+
+const handleDownloadPDF = async () => {
+  if (!invoice.value) return
+
+  try {
+    downloadingPDF.value = true
+    await downloadInvoicePDF(invoice.value)
+  } catch (error) {
+    console.error('Error al descargar PDF:', error)
+    alert('Error al descargar el PDF. Por favor, intente nuevamente.')
+  } finally {
+    downloadingPDF.value = false
+  }
+}
+
 const markAsPaid = async () => {
   if (confirm(`¿Marcar la factura ${invoice.value.numeroFactura} como pagada?`)) {
     try {
@@ -367,3 +410,4 @@ onMounted(() => {
   }
 }
 </style>
+  
